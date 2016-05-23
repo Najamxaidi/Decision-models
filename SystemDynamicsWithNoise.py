@@ -50,7 +50,7 @@ class SystemDynamics:
 
 
 def main():
-    SystemDynamics(agents = 100, discount_rate = 0.5, alpha = 2, utility_a = 5, utility_b = 50,
+    SystemDynamics(agents = 100, discount_rate = 0.5, alpha = 2, utility_a = 50, utility_b = 50,
                        initial_experience_a = 10, initial_experience_b = 10)
 
 
