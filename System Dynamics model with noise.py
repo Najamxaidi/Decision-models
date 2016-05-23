@@ -16,15 +16,15 @@ class SystemDynamics:
 
         # number_of_a = []
         # number_of_b = []
-        t = np.linspace(0, 0.001, 50)
+        t = np.linspace(0, 0.001, 20)
 
         for i in range(len(t)):
             ## initial rate is dependent upon the initial parameters
-            noise = np.random.normal(0, 0.04, 2)
-            rate_a = 0.01 * self.agents * (noise[0] + pow(self.experience_a, self.alpha) / (
-                pow(self.experience_a, self.alpha) + pow(self.experience_b,self.alpha)))
-            rate_b = 0.01 * self.agents * (noise[1] + pow(self.experience_b, self.alpha) / (
-                pow(self.experience_a, self.alpha) + pow(self.experience_b, self.alpha)))
+
+            rate_a = 0.01 * self.agents * pow(self.experience_a, self.alpha) / (
+                pow(self.experience_a, self.alpha) + pow(self.experience_b,self.alpha))
+            rate_b = 0.01 * self.agents * pow(self.experience_b, self.alpha) / (
+                pow(self.experience_a, self.alpha) + pow(self.experience_b, self.alpha))
 
             ## agents depends upon the rates
             #number_of_a.append(rate_a * self.agents)
