@@ -58,12 +58,8 @@ class SystemDynamics:
         # ----------------
         #  random.normal parameters are np.random.normal(mean, standard_deviation, number of values to be returned)
         noise= np.random.normal(0, noise_standard_deviation, self.options)
-        soln = odeint(self.rate_of_experience, )
+        soln = odeint(self.rate_of_experience, self.experiences_of_choices, time_vector, args=(self.flow_rate, self.alpha, self.k))
 
-
-        # calculate new experience
-        self.experience_a = self.discount_rate * (self.utility_a * self.agents[0][i])
-        self.experience_b = self.discount_rate * (self.utility_b * self.agents[1][i])
 
         for i in range(len(self.agents)):
             plt.plot(time_vector, self.agents[i], label=i)
