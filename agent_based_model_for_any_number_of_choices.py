@@ -13,7 +13,7 @@ class Agent_Based_Decision_Model:
     """
 
     def __init__(self, number_of_agents, k, alpha, utility_of_choices,
-                 initial_experiences, discount_rate = 0.0,noise_standard_deviation=0.0):
+                 initial_experiences, discount_rate = 0.0, noise_standard_deviation=0.0):
 
         """
 
@@ -37,7 +37,7 @@ class Agent_Based_Decision_Model:
 
         # initially the probablity has been set to zero
         # it will be calculated later based upon the initial experience
-        self.options_Probability = np.zeros((self.options,), dtype=np.int)
+        self.options_Probability = np.zeros((self.options,), dtype=np.float)
 
         # required for plotting
         self.orbits = []
