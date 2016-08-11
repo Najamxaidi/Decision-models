@@ -36,14 +36,15 @@ class SystemDynamics:
     # for example linspace(0, 0.001, 50) will generate 50 values between 0 and 0.001
     #--------------------------
     # this function solves the differential equation as mentioned in the paper
-    def solve(self, time_vector=np.linspace(0, 100, 10000), noise_standard_deviation=10):
+    def solve(self, time_vector=np.linspace(0, 10, 10000), noise_standard_deviation=10):
 
         # initial rate is dependent upon the initial parameters
         # level of noise is sampled from a normal distribution
         # ----------------
+        step = 0
         soln = odeint(rate_of_experience, self.experiences_of_choices, time_vector,
                       args=(self.number_of_agents, self.alpha, self.k,self.discount_rate,
-                            noise_standard_deviation, self.options, self.utility_of_choices), mxstep = 500)
+                            noise_standard_deviation, self.options, self.utility_of_choices, step), mxstep = 500)
 
         for i in range(self.options):
             plt.plot(time_vector, soln[:, i], label=("choice " + str(i)))
@@ -56,12 +57,9 @@ class SystemDynamics:
         plt.show()
 
 
-def rate_of_experience(experience, t, number_of_agents, alpha, k, discount_rate,
-                       noise_standard_deviation, options, utility_of_choices):
 
-    # calculate noise
-    #  random.normal parameters are np.random.normal(mean, standard_deviation, number of values to be returned)
-    noise = np.array(np.random.normal(0, noise_standard_deviation, options))
+def rate_of_experience(experience, t, number_of_agents, alpha, k, discount_rate,
+                       noise_standard_deviation, options, utility_of_choices, step):
 
     # Equation 3.1 starts (this is pi)
     # calculate the probability based upon the initial experiences
@@ -76,14 +74,15 @@ def rate_of_experience(experience, t, number_of_agents, alpha, k, discount_rate,
 
     row_ci = discount_rate * experience
 
-    experience = pi_qi_flux - row_ci + noise
+    experience = pi_qi_flux - row_ci
 
     return experience
 
 
+
 def main():
-    sysd = SystemDynamics(number_of_agents= 100, k = 0.5, alpha = 2, utility_of_choices= [10, 20],
-                          initial_experiences= [100, 10], discount_rate=0.01)
+    sysd = SystemDynamics(number_of_agents= 100, k = 0.5, alpha = 2, utility_of_choices= [10, 50, 20],
+                          initial_experiences= [100, 20, 50], discount_rate=0.01)
     sysd.solve()
 
 

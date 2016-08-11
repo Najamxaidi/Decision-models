@@ -10,7 +10,7 @@ class SystemDynamicsWithSdeint:
     """
 
     def __init__(self, number_of_agents, k, alpha, utility_of_choices, initial_experiences,
-                 discount_rate = 0.0, sd = 1):
+                 discount_rate = 0.0, sd = 0.01, rotation_time = 1000, flag = False):
         """
 
         :param number_of_agents: an integer with the total number of agents
@@ -32,18 +32,37 @@ class SystemDynamicsWithSdeint:
         # get the total number of options avaliable to the agents
         self.options = len(utility_of_choices)
         self.sd = sd
+        self.count = 0
+        self.rotation_time = rotation_time
+        self.flag = flag
+
+        # required for plotting
+        self.orbits = []
+        for i in range(self.options):
+            self.orbits.append([])
+
+    def rotation_of_utilitities(self):
+        self.utility_of_choices = np.roll(self.utility_of_choices,1)
 
 
     def rate_of_experience(self, experience, t):
+        #print(experience)
 
         # Equation 3.1 starts (this is pi)
         # calculate the probability based upon the initial experiences
+        self.count += 1
+        if self.count == self.rotation_time and self.flag == True:
+            self.utility_of_choices = np.roll(self.utility_of_choices, 1)
 
         # calculate probability
         options_probability = (np.power((experience + self.k), self.alpha)) / np.sum(np.power((experience + self.k), self.alpha))
 
         # Equation 3.1 ends
         pi_qi_flux = options_probability * self.utility_of_choices * self.number_of_agents
+
+        #plotting stuff
+        for i in range(self.options):
+            self.orbits[i].append(options_probability[i])
 
         row_ci = self.discount_rate * experience
 
@@ -60,29 +79,40 @@ class SystemDynamicsWithSdeint:
     # for example linspace(0, 0.001, 50) will generate 50 values between 0 and 0.001
     #--------------------------
     # this function solves the differential equation as mentioned in the paper
-    def solve(self, time_vector=np.linspace(0, 500, 10000)):
+    def solve(self, time_vector=np.linspace(0, 10, 10000)):
 
         # initial rate is dependent upon the initial parameters
         # level of noise is sampled from a normal distribution
         # ----------------
         soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
+        #print(self.count)
 
+        plt.figure(1)
+        plt.subplot(211)
+        for i in range(len(self.orbits)):
+            plt.plot(range(len(self.orbits[i])), self.orbits[i], label=("choice " + str(i)))
+        plt.ylim(-2, 2)
+        plt.ylabel('proportion of agents')
+        plt.legend(loc='lower center')
+
+        plt.title('1st: proportion of agents vs time steps -- 2nd: experience of agents vs time steps')
+
+        plt.subplot(212)
         for i in range(self.options):
             plt.plot(time_vector, soln[:, i], label=("choice " + str(i)))
-
         #plt.rc('lines', linewidth=2.0)
-        plt.ylim(ymin=-2000)
+        #plt.ylim(ymin=-2000)
         plt.xlabel('time')
         plt.ylabel('experience')
-        plt.legend()
+        plt.legend(bbox_to_anchor=(1.1, 1.05))
         plt.show()
 
 
 def main():
-    sysd = SystemDynamicsWithSdeint(number_of_agents= 100, k = 0.5, alpha = 2, utility_of_choices= [10, 20],
-                          initial_experiences= [100, 10], discount_rate=0.01, sd = 100)
+    sysd = SystemDynamicsWithSdeint(number_of_agents= 100, k = 0.5, alpha = 2, utility_of_choices= [10, 100, 20],
+                          initial_experiences= [100, 20, 50], discount_rate=0.01, sd = 10, rotation_time = 2000, flag = False)
 
-    sysd.solve(time_vector=np.linspace(0, 1, 1000))
+    sysd.solve(time_vector=np.linspace(0, 4000, 10000))
 
 
 if __name__ == "__main__":

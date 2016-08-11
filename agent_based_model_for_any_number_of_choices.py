@@ -90,13 +90,17 @@ class Agent_Based_Decision_Model:
         # check equation 3.2
 
         self.previous_exp *= self.discount  # row * perv exp
-        self.new_exp = (self.options_Probability * temp_utility * self.numberOfAgents) + noise
+        #self.new_exp = (self.options_Probability * temp_utility * self.numberOfAgents) + noise
+        self.new_exp = (temp_utility) + noise
         self.previous_exp += self.new_exp
 
         # for plotting
         for i in range(self.options):
             self.orbits[i].append(count_of_choices[i])
             self.exp_orbits[i].append(self.new_exp[i])
+
+    def rotation_of_utilitities(self):
+        self.utility_of_choices = np.roll(self.utility_of_choices,1)
 
     def plot(self):
         # plot the graphs
@@ -123,16 +127,24 @@ class Agent_Based_Decision_Model:
         plt.show()
 
 
+    def run(self, steps, rotation_step, flag):
+        for i in range(steps):
+            if i == rotation_step and flag == True:
+                self.rotation_of_utilitities()
+            self.step()
+        self.plot()
+
+
+
 def main():
     steps = 100
+    rotation_step = 50
+    flag = True
     d = Agent_Based_Decision_Model(number_of_agents= 100, k = 0.5, alpha = 2,
-                                   utility_of_choices= [10, 20], initial_experiences= [100, 10],
-                                   discount_rate=0.01, noise_standard_deviation=10)
+                                   utility_of_choices= [10, 100, 20], initial_experiences=[100, 20, 50],
+                                   discount_rate=0.01, noise_standard_deviation=0.1)
 
-    for i in range(steps):
-        d.step()
-
-    d.plot()
+    d.run(steps,rotation_step, flag)
 
 
 if __name__ == "__main__":
