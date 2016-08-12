@@ -13,8 +13,7 @@ class Agent_Based_Decision_Model:
     """
 
     def __init__(self, number_of_agents, k, alpha, utility_of_choices,
-                 initial_experiences, discount_rate = 0.0, noise_standard_deviation=0.0):
-
+                 initial_experiences, discount_rate=0.0, noise_standard_deviation=0.0):
         """
 
         :param number_of_agents: an integer with the total number of agents
@@ -61,12 +60,14 @@ class Agent_Based_Decision_Model:
         base = np.sum(np.power((self.new_exp + self.k), self.alpha))
 
         # calculate probability
-        self.options_Probability = (np.power((self.new_exp + self.k), self.alpha)) / base
+        self.options_Probability = (
+            np.power((self.new_exp + self.k), self.alpha)) / base
 
         # Equation 3.1 ends
 
         # each agent choose an option with a probability p
-        agent_choices = np.random.choice(range(self.options), self.numberOfAgents, p=self.options_Probability)
+        agent_choices = np.random.choice(
+            range(self.options), self.numberOfAgents, p=self.options_Probability)
 
         # the array count_of_choices contains info about the number of agents who have taken such a choice
         # the array temp_utility contains information about the total utility of a particular choice
@@ -82,7 +83,8 @@ class Agent_Based_Decision_Model:
         temp_utility = count_of_choices * self.utility_of_choices
 
         # generate a noise array
-        noise = np.array(np.random.normal(0, self.noise_standard_deviation, self.options))
+        noise = np.array(np.random.normal(
+            0, self.noise_standard_deviation, self.options))
 
         # previous experience is discounted
         # new experience is calculated
@@ -100,7 +102,7 @@ class Agent_Based_Decision_Model:
             self.exp_orbits[i].append(self.new_exp[i])
 
     def rotation_of_utilitities(self):
-        self.utility_of_choices = np.roll(self.utility_of_choices,1)
+        self.utility_of_choices = np.roll(self.utility_of_choices, 1)
 
     def plot(self):
         # plot the graphs
@@ -108,24 +110,26 @@ class Agent_Based_Decision_Model:
         plt.figure(1)
         plt.subplot(211)
         for i in range(len(self.orbits)):
-            plt.plot(range(len(self.orbits[i])), self.orbits[i], label=("choice " + str(i)))
+            plt.plot(range(len(self.orbits[i])), self.orbits[
+                     i], label=("choice " + str(i)))
         #plt.rc('lines', linewidth=2.0)
-        plt.ylim(-10, self.numberOfAgents+10)
+        plt.ylim(-10, self.numberOfAgents + 10)
         plt.ylabel('number of agents')
         #plt.xlabel('time step')
         plt.legend()
-        plt.title('1st: number of agents vs time steps -- 2nd: experience of agents vs time steps')
+        plt.title(
+            '1st: number of agents vs time steps -- 2nd: experience of agents vs time steps')
 
         plt.subplot(212)
         for i in range(len(self.exp_orbits)):
-            plt.plot(range(len(self.exp_orbits[i])), self.exp_orbits[i], label=("choice " + str(i)))
+            plt.plot(range(len(self.exp_orbits[i])), self.exp_orbits[
+                     i], label=("choice " + str(i)))
         #plt.rc('lines', linewidth=2.0)
         plt.ylabel('experience of agents')
         plt.xlabel('time step')
         plt.legend()
         #plt.title('experience of agents vs time steps')
         plt.show()
-
 
     def run(self, steps, rotation_step, flag):
         for i in range(steps):
@@ -135,16 +139,15 @@ class Agent_Based_Decision_Model:
         self.plot()
 
 
-
 def main():
     steps = 100
     rotation_step = 50
     flag = True
-    d = Agent_Based_Decision_Model(number_of_agents= 100, k = 0.5, alpha = 2,
-                                   utility_of_choices= [10, 100, 20], initial_experiences=[100, 20, 50],
+    d = Agent_Based_Decision_Model(number_of_agents=100, k=0.5, alpha=2,
+                                   utility_of_choices=[10, 100, 20], initial_experiences=[100, 20, 50],
                                    discount_rate=0.01, noise_standard_deviation=0.1)
 
-    d.run(steps,rotation_step, flag)
+    d.run(steps, rotation_step, flag)
 
 
 if __name__ == "__main__":
