@@ -143,7 +143,7 @@ def main():
     rotation_step = 50
     flag = False
     noise_flag = False
-    d = Agent_Based_Decision_Model(number_of_agents= 10, k = 0.5, alpha = 2,
+    d = Agent_Based_Decision_Model(number_of_agents= 100, k = 0.5, alpha = 2,
                                    utility_of_choices= [0.9, 0.9, 0.9, 0.9, 0.9],
                                    initial_experiences=[0.1, 0.1, 0.1, 0.1, 0.1],
                                    discount_rate=0.01, noise_standard_deviation=50)
