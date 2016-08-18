@@ -91,10 +91,10 @@ class SystemDynamicsWithSdeint:
         plt.subplot(211)
         for i in range(len(self.orbits)):
             plt.plot(range(len(self.orbits[i])), self.orbits[i], label=("choice " + str(i)))
-        plt.ylim(-2, 2)
+        #plt.ylim(-1, 1)
         plt.ylabel('proportion of agents')
-        plt.legend(loc='lower center')
-
+        plt.legend(loc='best')
+        #plt.legend()
         plt.title('1st: proportion of agents vs time steps -- 2nd: experience of agents vs time steps')
 
         plt.subplot(212)
@@ -104,15 +104,19 @@ class SystemDynamicsWithSdeint:
         #plt.ylim(ymin=-2000)
         plt.xlabel('time')
         plt.ylabel('experience')
-        plt.legend(bbox_to_anchor=(1.1, 1.05))
+        #plt.legend(bbox_to_anchor=(1.1, 1.05))
+        plt.legend(loc='best')
+        #plt.legend()
         plt.show()
 
 
 def main():
-    sysd = SystemDynamicsWithSdeint(number_of_agents= 100, k = 0.5, alpha = 2, utility_of_choices= [10, 100, 20],
-                          initial_experiences= [100, 20, 50], discount_rate=0.01, sd = 10, rotation_time = 2000, flag = False)
+    sysd = SystemDynamicsWithSdeint(number_of_agents= 10, k = 6, alpha = 2,
+                                    utility_of_choices= [1, 1, 1, 1, 1],
+                                    initial_experiences= [0.10001, 0.10001, 0.10001, 0.10002, 0.10001],
+                                    discount_rate=1/1500, sd = 0, rotation_time = 2000, flag = False)
 
-    sysd.solve(time_vector=np.linspace(0, 4000, 10000))
+    sysd.solve(time_vector=np.linspace(0, 2000, 1000))
 
 
 if __name__ == "__main__":

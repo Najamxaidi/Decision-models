@@ -30,7 +30,7 @@ class Agent_Based_Decision_Model:
         self.utility_of_choices = np.array(utility_of_choices)
         self.k = k
         self.alpha = alpha
-        self.previous_exp = np.zeros((self.options,), dtype=np.float)
+        self.previous_exp = np.array(initial_experiences)  ##np.zeros((self.options,), dtype=np.float)
         self.new_exp = np.array(initial_experiences)
         self.discount = discount_rate
         self.noise_standard_deviation = noise_standard_deviation
@@ -47,21 +47,21 @@ class Agent_Based_Decision_Model:
             self.orbits.append([])
             self.exp_orbits.append([])
 
-    def step(self):
+    def step(self, noise_flag):
 
         # this array will contain the choices taken by each agent in the current step.
         # the choice taken depends upon the probability of the choices. This array needs to be cleared in
         # each step to contain information only related to that step.
 
-        agent_choices = np.zeros((self.numberOfAgents,), dtype=np.int)
+        #agent_choices = np.zeros((self.numberOfAgents,), dtype=np.int)
 
         # Equation 3.1 starts
         # calculate the probability based upon the initial experiences
 
-        base = np.sum(np.power((self.new_exp + self.k), self.alpha))
+        base = np.sum(np.power((self.new_exp + self.k), self.alpha))       ####-----
 
         # calculate probability
-        self.options_Probability = (np.power((self.new_exp + self.k), self.alpha)) / base
+        self.options_Probability = (np.power((self.new_exp + self.k), self.alpha)) / base   ####-----
 
         # Equation 3.1 ends
 
@@ -82,8 +82,10 @@ class Agent_Based_Decision_Model:
         temp_utility = count_of_choices * self.utility_of_choices
 
         # generate a noise array
-        noise = np.array(np.random.normal(0, self.noise_standard_deviation, self.options))
-
+        if noise_flag == True:
+            noise = np.array(np.random.normal(0, self.noise_standard_deviation, self.options))
+        else:
+            noise = 0
         # previous experience is discounted
         # new experience is calculated
         # previous experience is updated
@@ -91,13 +93,13 @@ class Agent_Based_Decision_Model:
 
         self.previous_exp *= self.discount  # row * perv exp
         #self.new_exp = (self.options_Probability * temp_utility * self.numberOfAgents) + noise
-        self.new_exp = (temp_utility) + noise
-        self.previous_exp += self.new_exp
+        self.new_exp = (temp_utility) + self.previous_exp + noise  ##-----
+        #self.previous_exp += self.new_exp
 
         # for plotting
         for i in range(self.options):
             self.orbits[i].append(count_of_choices[i])
-            self.exp_orbits[i].append(self.new_exp[i])
+            self.exp_orbits[i].append(self.new_exp[i])   ####-----
 
     def rotation_of_utilitities(self):
         self.utility_of_choices = np.roll(self.utility_of_choices,1)
@@ -127,11 +129,11 @@ class Agent_Based_Decision_Model:
         plt.show()
 
 
-    def run(self, steps, rotation_step, flag):
+    def run(self, steps, rotation_step, flag, noise_flag):
         for i in range(steps):
             if i == rotation_step and flag == True:
                 self.rotation_of_utilitities()
-            self.step()
+            self.step(noise_flag)
         self.plot()
 
 
@@ -139,12 +141,14 @@ class Agent_Based_Decision_Model:
 def main():
     steps = 100
     rotation_step = 50
-    flag = True
-    d = Agent_Based_Decision_Model(number_of_agents= 100, k = 0.5, alpha = 2,
-                                   utility_of_choices= [10, 100, 20], initial_experiences=[100, 20, 50],
-                                   discount_rate=0.01, noise_standard_deviation=0.1)
+    flag = False
+    noise_flag = False
+    d = Agent_Based_Decision_Model(number_of_agents= 10, k = 0.5, alpha = 2,
+                                   utility_of_choices= [0.9, 0.9, 0.9, 0.9, 0.9],
+                                   initial_experiences=[0.1, 0.1, 0.1, 0.1, 0.1],
+                                   discount_rate=0.01, noise_standard_deviation=50)
 
-    d.run(steps,rotation_step, flag)
+    d.run(steps,rotation_step, flag, noise_flag)
 
 
 if __name__ == "__main__":

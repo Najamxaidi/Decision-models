@@ -36,7 +36,7 @@ class SystemDynamics:
     # for example linspace(0, 0.001, 50) will generate 50 values between 0 and 0.001
     #--------------------------
     # this function solves the differential equation as mentioned in the paper
-    def solve(self, time_vector=np.linspace(0, 10, 10000), noise_standard_deviation=10):
+    def solve(self, time_vector=np.linspace(0, 1000, 10000), noise_standard_deviation=10):
 
         # initial rate is dependent upon the initial parameters
         # level of noise is sampled from a normal distribution
@@ -47,6 +47,7 @@ class SystemDynamics:
                             noise_standard_deviation, self.options, self.utility_of_choices, step), mxstep = 500)
 
         for i in range(self.options):
+            plt.figure(i)
             plt.plot(time_vector, soln[:, i], label=("choice " + str(i)))
 
         #plt.rc('lines', linewidth=2.0)
@@ -81,8 +82,8 @@ def rate_of_experience(experience, t, number_of_agents, alpha, k, discount_rate,
 
 
 def main():
-    sysd = SystemDynamics(number_of_agents= 100, k = 0.5, alpha = 2, utility_of_choices= [10, 50, 20],
-                          initial_experiences= [100, 20, 50], discount_rate=0.01)
+    sysd = SystemDynamics(number_of_agents= 100, k = 0.5, alpha = 2, utility_of_choices= [10, 10, 10],
+                          initial_experiences= [10, 10, 10], discount_rate=0.01)
     sysd.solve()
 
 
