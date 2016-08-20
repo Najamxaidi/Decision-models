@@ -115,7 +115,7 @@ class Agent_Based_Decision_Model:
         plt.ylim(-10, self.numberOfAgents+10)
         plt.ylabel('number of agents')
         #plt.xlabel('time step')
-        plt.legend()
+        #plt.legend()
         plt.title('1st: number of agents vs time steps -- 2nd: experience of agents vs time steps')
 
         plt.subplot(212)
@@ -124,7 +124,7 @@ class Agent_Based_Decision_Model:
         #plt.rc('lines', linewidth=2.0)
         plt.ylabel('experience of agents')
         plt.xlabel('time step')
-        plt.legend()
+        #plt.legend()
         #plt.title('experience of agents vs time steps')
         plt.show()
 

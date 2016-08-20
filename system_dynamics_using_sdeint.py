@@ -70,6 +70,10 @@ class SystemDynamicsWithSdeint:
 
         experience = pi_qi_flux - row_ci
 
+        # if self.count == 20:
+        #     for i in range(len(experience)):
+        #             experience[i] += experience[i] * (0.01 * i-1)
+
         return experience
 
     def noise(self, W, t):
@@ -87,17 +91,16 @@ class SystemDynamicsWithSdeint:
         # level of noise is sampled from a normal distribution
         # ----------------
         soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
-        #print(self.count)
 
         ##-------Print the area under the curve over here ---------###
         for i in range(self.options):
             print("option " + str(i) + " has area under the curve as:")
-            #print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(soln[:, i], range(0, len(soln)))))
+            print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(soln[:, i], range(0, len(soln)))))
             #print("using composite Simpson's rule " + '{:18.5f}'.format(simps(soln[:, i], range(0, len(soln)))))
 
-            print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(self.orbits_for_pi_ei[i], range(0, len(self.orbits_for_pi_ei[i])))))
-            print("using composite Simpson's rule " + '{:18.5f}'.format(simps(self.orbits_for_pi_ei[i], range(0, len(self.orbits_for_pi_ei[i])))))
-            print("")
+         #   print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(self.orbits_for_pi_ei[i], range(0, len(self.orbits_for_pi_ei[i])))))
+         #   print("using composite Simpson's rule " + '{:18.5f}'.format(simps(self.orbits_for_pi_ei[i], range(0, len(self.orbits_for_pi_ei[i])))))
+          #  print("")
 
 
         plt.figure(1)
@@ -106,14 +109,13 @@ class SystemDynamicsWithSdeint:
             plt.plot(range(len(self.orbits[i])), self.orbits[i], label=("choice " + str(i)))
         #plt.ylim(-1, 1)
         plt.ylabel('proportion')
-        plt.legend(loc='best')
+        #plt.legend(loc='best')
         #plt.legend()
         plt.title('1st: proportion of agents vs time steps -- 2nd: experience of agents vs time steps')
 
         plt.subplot(312)
         for i in range(self.options):
             plt.plot(time_vector, soln[:, i], label=("choice " + str(i)))
-        #plt.rc('lines', linewidth=2.0)
         #plt.ylim(ymin=-2000)
         plt.xlabel('time')
         plt.ylabel('experience')
@@ -132,12 +134,12 @@ class SystemDynamicsWithSdeint:
 
 
 def main():
-    sysd = SystemDynamicsWithSdeint(number_of_agents= 10, k = 1, alpha = 2,
-                                    utility_of_choices= [1, 0.9, 0.9, 0.9, 0.9],
-                                    initial_experiences= [0.08, 0.11, 0.12, 0.10, 0.09],
-                                    discount_rate=0.01, sd = 0, rotation_time = 2000, flag = False)
+    sysd = SystemDynamicsWithSdeint(number_of_agents=8, k=1, alpha=2,
+                                    utility_of_choices=[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+                                    initial_experiences=[10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 10],
+                                    discount_rate=1, sd=0, rotation_time=2000, flag=False)
 
-    sysd.solve(time_vector=np.linspace(0, 50, 25))
+    sysd.solve(time_vector=np.linspace(0, 1000, 500))
 
 
 if __name__ == "__main__":

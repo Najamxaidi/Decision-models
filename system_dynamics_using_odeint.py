@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
+from scipy.integrate import simps
+from numpy import trapz
 
 
 class SystemDynamics:
@@ -31,59 +33,75 @@ class SystemDynamics:
 
         # get the total number of options avaliable to the agents
         self.options = len(utility_of_choices)
+        self.count = 0
 
-    # numpy linspace parameters are as (start value , stop value, number of values)
-    # for example linspace(0, 0.001, 50) will generate 50 values between 0 and 0.001
-    #--------------------------
-    # this function solves the differential equation as mentioned in the paper
-    def solve(self, time_vector=np.linspace(0, 1000, 10000), noise_standard_deviation=10):
+        self.orbits = []
+        self.orbits_for_pi_ei = []
+        for i in range(self.options):
+            self.orbits.append([])
+            self.orbits_for_pi_ei.append([])
 
-        # initial rate is dependent upon the initial parameters
-        # level of noise is sampled from a normal distribution
-        # ----------------
-        step = 0
-        soln = odeint(rate_of_experience, self.experiences_of_choices, time_vector,
+    def rate_of_experience(self, experience, t, number_of_agents, alpha, k, discount_rate, options, utility_of_choices):
+
+        # Equation 3.1 starts (this is pi)
+        # calculate the probability based upon the initial experiences
+
+        base = np.sum(np.power((experience + k), alpha))
+
+        # calculate probability
+        options_probability = (np.power((experience + k), alpha)) / base
+
+        # Equation 3.1 ends
+        pi_qi_flux = options_probability * utility_of_choices * number_of_agents
+
+        row_ci = discount_rate * experience
+
+        # plotting stuff
+        self.count += 1
+        for i in range(options):
+            self.orbits[i].append(options_probability[i])
+
+        experience = pi_qi_flux - row_ci
+
+        return experience
+
+    def solve(self, time_vector=np.linspace(0, 500, 100)):
+
+        soln = odeint(self.rate_of_experience, self.experiences_of_choices, time_vector,
                       args=(self.number_of_agents, self.alpha, self.k,self.discount_rate,
-                            noise_standard_deviation, self.options, self.utility_of_choices, step), mxstep = 500)
+                            self.options, self.utility_of_choices))
+
 
         for i in range(self.options):
-            plt.figure(i)
-            plt.plot(time_vector, soln[:, i], label=("choice " + str(i)))
+            print("option " + str(i) + " has area under the curve as:")
+            print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(soln[:, i], range(0, len(soln)))))
+            #print("using composite Simpson's rule " + '{:18.5f}'.format(simps(soln[:, i], range(0, len(soln)))))
 
-        #plt.rc('lines', linewidth=2.0)
-        plt.ylim(ymin=-2000)
+        plt.figure(1)
+        plt.subplot(211)
+        for i in range(len(self.orbits)):
+            plt.plot(range(self.count), self.orbits[i], label=("choice " + str(i)))
+        plt.ylabel('proportion')
+        #plt.legend()
+        plt.title('1st: proportion of agents vs time steps -- 2nd: experience of agents vs time steps')
+
+        plt.subplot(212)
+        for i in range(self.options):
+            plt.plot(time_vector, soln[:, i], label=("choice " + str(i)))
         plt.xlabel('time')
         plt.ylabel('experience')
-        plt.legend()
         plt.show()
 
 
-
-def rate_of_experience(experience, t, number_of_agents, alpha, k, discount_rate,
-                       noise_standard_deviation, options, utility_of_choices, step):
-
-    # Equation 3.1 starts (this is pi)
-    # calculate the probability based upon the initial experiences
-
-    base = np.sum(np.power((experience + k), alpha))
-
-    # calculate probability
-    options_probability = (np.power((experience + k), alpha)) / base
-
-    # Equation 3.1 ends
-    pi_qi_flux = options_probability * utility_of_choices * number_of_agents
-
-    row_ci = discount_rate * experience
-
-    experience = pi_qi_flux - row_ci
-
-    return experience
-
-
-
 def main():
-    sysd = SystemDynamics(number_of_agents= 100, k = 0.5, alpha = 2, utility_of_choices= [10, 10, 10],
-                          initial_experiences= [10, 10, 10], discount_rate=0.01)
+
+    sysd = SystemDynamics(number_of_agents=8, k=1, alpha=2,
+                          utility_of_choices=[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+                                              0.5],
+                          initial_experiences=[0.10, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20, 0.21, 0.22, 0.23,
+                                               0.24, 0.25, 0.10],
+                          discount_rate=1)
+
     sysd.solve()
 
 
