@@ -91,6 +91,9 @@ class SystemDynamicsWithSdeint:
         # level of noise is sampled from a normal distribution
         # ----------------
         soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
+        #soln = sdeint.stratint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
+        low_values_indices = soln < 0  # Where values are low
+        soln[low_values_indices] = 0
 
         ##-------Print the area under the curve over here ---------###
         for i in range(self.options):
@@ -134,12 +137,14 @@ class SystemDynamicsWithSdeint:
 
 
 def main():
-    sysd = SystemDynamicsWithSdeint(number_of_agents=8, k=1, alpha=2,
-                                    utility_of_choices=[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
-                                    initial_experiences=[10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 10],
-                                    discount_rate=1, sd=0, rotation_time=2000, flag=False)
+    sysd = SystemDynamicsWithSdeint(number_of_agents=40, k=1, alpha=2,
+                                    utility_of_choices=[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+                                              0.5],
+                                    initial_experiences=[0.10, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20, 0.21, 0.22, 0.23,
+                                               0.24, 0.25, 0.10],
+                                    discount_rate=0.9, sd=0, rotation_time=2000, flag=False)
 
-    sysd.solve(time_vector=np.linspace(0, 1000, 500))
+    sysd.solve(time_vector=np.linspace(0, 100, 50))
 
 
 if __name__ == "__main__":
