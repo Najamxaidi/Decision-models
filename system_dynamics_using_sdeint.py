@@ -3,6 +3,7 @@ import sdeint
 import matplotlib.pyplot as plt
 from scipy.integrate import simps
 from numpy import trapz
+from scipy.optimize import basinhopping as bh
 
 
 class SystemDynamicsWithSdeint:
@@ -40,10 +41,9 @@ class SystemDynamicsWithSdeint:
 
         # required for plotting
         self.orbits = []
-        self.orbits_for_pi_ei = []
+        self.orbits_for_sum_pi_ei = []
         for i in range(self.options):
             self.orbits.append([])
-            self.orbits_for_pi_ei.append([])
 
     def rotation_of_utilitities(self):
         self.utility_of_choices = np.roll(self.utility_of_choices,1)
@@ -53,6 +53,7 @@ class SystemDynamicsWithSdeint:
         self.count += 1
         if self.count == self.rotation_time and self.flag == True:
             self.utility_of_choices = np.roll(self.utility_of_choices, 1)
+            self.count = 0
 
         # Equation 3.1 starts (this is pi)
         # calculate the probability based upon the initial experiences
@@ -64,15 +65,14 @@ class SystemDynamicsWithSdeint:
         # plotting stuff
         for i in range(self.options):
             self.orbits[i].append(options_probability[i])
-            self.orbits_for_pi_ei[i].append(options_probability[i] * experience[i])
+            if experience[i] < 0:
+                experience[i] = 0
+
+        self.orbits_for_sum_pi_ei.append(np.sum(options_probability*experience))
 
         row_ci = self.discount_rate * experience
 
         experience = pi_qi_flux - row_ci
-
-        # if self.count == 20:
-        #     for i in range(len(experience)):
-        #             experience[i] += experience[i] * (0.01 * i-1)
 
         return experience
 
@@ -87,24 +87,12 @@ class SystemDynamicsWithSdeint:
     # this function solves the differential equation as mentioned in the paper
     def solve(self, time_vector=np.linspace(0, 10, 10000)):
 
-        # initial rate is dependent upon the initial parameters
-        # level of noise is sampled from a normal distribution
-        # ----------------
         soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
-        #soln = sdeint.stratint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
         low_values_indices = soln < 0  # Where values are low
         soln[low_values_indices] = 0
 
         ##-------Print the area under the curve over here ---------###
-        for i in range(self.options):
-            print("option " + str(i) + " has area under the curve as:")
-            print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(soln[:, i], range(0, len(soln)))))
-            #print("using composite Simpson's rule " + '{:18.5f}'.format(simps(soln[:, i], range(0, len(soln)))))
-
-         #   print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(self.orbits_for_pi_ei[i], range(0, len(self.orbits_for_pi_ei[i])))))
-         #   print("using composite Simpson's rule " + '{:18.5f}'.format(simps(self.orbits_for_pi_ei[i], range(0, len(self.orbits_for_pi_ei[i])))))
-          #  print("")
-
+        print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(self.orbits_for_sum_pi_ei, range(0, len(self.orbits_for_sum_pi_ei)))))
 
         plt.figure(1)
         plt.subplot(311)
@@ -112,43 +100,80 @@ class SystemDynamicsWithSdeint:
             plt.plot(range(len(self.orbits[i])), self.orbits[i], label=("choice " + str(i)))
         #plt.ylim(-1, 1)
         plt.ylabel('proportion')
-        #plt.legend(loc='best')
-        #plt.legend()
         plt.title('1st: proportion of agents vs time steps -- 2nd: experience of agents vs time steps')
 
         plt.subplot(312)
         for i in range(self.options):
             plt.plot(time_vector, soln[:, i], label=("choice " + str(i)))
-        #plt.ylim(ymin=-2000)
+        #plt.ylim(ymin=-500)
+        plt.legend()
         plt.xlabel('time')
         plt.ylabel('experience')
-        #plt.legend(bbox_to_anchor=(1.1, 1.05))
-        #plt.legend(loc='best')
-        #plt.legend()
 
         plt.subplot(313)
-        for i in range(self.options):
-            plt.plot(range(len(self.orbits_for_pi_ei[i])), self.orbits_for_pi_ei[i], label=("choice " + str(i)))
+        plt.plot(range(len(self.orbits_for_sum_pi_ei)), self.orbits_for_sum_pi_ei, label="test")
         plt.xlabel('time')
-        plt.ylabel('Pi * Ei')
+        plt.ylabel('Sum(Pi * Ei)')
         # plt.legend(bbox_to_anchor=(1.1, 1.05))
-        #plt.legend(loc='best')
+        # plt.legend()
         plt.show()
+
+    def return_area(self, time_vector=np.linspace(0, 10, 10000)):
+            soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
+            return trapz(self.orbits_for_sum_pi_ei, range(0, len(self.orbits_for_sum_pi_ei)))
 
 
 def main():
-    sysd = SystemDynamicsWithSdeint(number_of_agents=40, k=1, alpha=2,
-                                    utility_of_choices=[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
-                                              0.5],
-                                    initial_experiences=[0.10, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20, 0.21, 0.22, 0.23,
-                                               0.24, 0.25, 0.10],
-                                    discount_rate=0.9, sd=0, rotation_time=2000, flag=False)
+    sysd = SystemDynamicsWithSdeint(number_of_agents=10,
+                                    k=1,
+                                    alpha=2,
+                                    utility_of_choices=[0.25,0.50,0.75,1],
+                                    initial_experiences=[1, 0.75, 0.50, 0.25],
+                                    discount_rate=0.99,
+                                    sd=0,
+                                    rotation_time=100,
+                                    flag=True)
 
-    sysd.solve(time_vector=np.linspace(0, 100, 50))
+    sysd.solve(time_vector=np.linspace(0, 1000, 500))
 
+
+def generate_stat():
+
+    time_vector = np.linspace(0, 1000, 500)
+
+    area_array = []
+    standard_deviation = []
+    ######### Generating statistics #############
+    for i in frange(0.0,10.0,0.1):
+        sysd = SystemDynamicsWithSdeint(number_of_agents=10,
+                                        k=1,
+                                        alpha=2,
+                                        utility_of_choices=[1, 0.50, 0.75, 1],
+                                        initial_experiences=[1, 0.75, 0.50, 0.25],
+                                        discount_rate=0.99,
+                                        sd=i,
+                                        rotation_time=200,
+                                        flag=True)
+
+        area_array.append(sysd.return_area(time_vector))
+        standard_deviation.append(i)
+
+    plt.plot(standard_deviation, area_array, label="test")
+    plt.xlabel('standard deviation')
+    plt.ylabel('area')
+    # plt.legend()
+    plt.show()
+
+
+def frange(start, stop, step):
+    i = start
+    while i<stop:
+        yield i
+        i += step
 
 if __name__ == "__main__":
-    main()
+    #main()
+    generate_stat()
 
 
 

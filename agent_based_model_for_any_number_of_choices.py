@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from scipy.integrate import simps
+from numpy import trapz
 
 class Agent_Based_Decision_Model:
 
@@ -105,6 +106,31 @@ class Agent_Based_Decision_Model:
         self.utility_of_choices = np.roll(self.utility_of_choices,1)
 
     def plot(self):
+
+        # print(self.orbits[0])
+        # print(self.orbits[1])
+        # print(self.orbits[2])
+        # print(self.orbits[3])
+        # print(self.orbits[4])
+        # print(self.orbits[5])
+        # print(self.orbits[6])
+        # print(self.orbits[7])
+        # print(self.orbits[8])
+        # print(self.orbits[9])
+        # print(self.orbits[10])
+        # print(self.orbits[11])
+        # print(self.orbits[12])
+        # print(self.orbits[13])
+        # print(self.orbits[14])
+        # print(self.orbits[15])
+
+        #print the area first
+        for i in range(self.options):
+            print("option " + str(i) + " has area under the curve as:")
+            print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(self.orbits[i], range(0, len(self.orbits[i])))))
+        #     print("using composite Simpson's rule " + '{:18.5f}'.format(simps(soln[:, i], range(0, len(soln)))))
+
+
         # plot the graphs
 
         plt.figure(1)
@@ -139,14 +165,16 @@ class Agent_Based_Decision_Model:
 
 
 def main():
-    steps = 100
+    steps = 10
     rotation_step = 50
     flag = False
     noise_flag = False
-    d = Agent_Based_Decision_Model(number_of_agents= 100, k = 0.5, alpha = 2,
-                                   utility_of_choices= [0.9, 0.9, 0.9, 0.9, 0.9],
-                                   initial_experiences=[0.1, 0.1, 0.1, 0.1, 0.1],
-                                   discount_rate=0.01, noise_standard_deviation=50)
+    d = Agent_Based_Decision_Model(number_of_agents= 10, k = 1, alpha = 2,
+                                   utility_of_choices= [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+                                              0.5],
+                                   initial_experiences=[0.10, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20, 0.21, 0.22, 0.23,
+                                               0.24, 0.25, 0.10],
+                                   discount_rate=1, noise_standard_deviation=0)
 
     d.run(steps,rotation_step, flag, noise_flag)
 
