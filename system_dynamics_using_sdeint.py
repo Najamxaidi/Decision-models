@@ -3,7 +3,7 @@ import sdeint
 import matplotlib.pyplot as plt
 from scipy.integrate import simps
 from numpy import trapz
-from scipy.optimize import basinhopping as bh
+from scipy.optimize import basinhopping
 
 
 class SystemDynamicsWithSdeint:
@@ -92,7 +92,7 @@ class SystemDynamicsWithSdeint:
         soln[low_values_indices] = 0
 
         ##-------Print the area under the curve over here ---------###
-        print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(self.orbits_for_sum_pi_ei, range(0, len(self.orbits_for_sum_pi_ei)))))
+        #print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(self.orbits_for_sum_pi_ei, range(0, len(self.orbits_for_sum_pi_ei)))))
 
         plt.figure(1)
         plt.subplot(311)
@@ -122,7 +122,6 @@ class SystemDynamicsWithSdeint:
             soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
             return trapz(self.orbits_for_sum_pi_ei, range(0, len(self.orbits_for_sum_pi_ei)))
 
-
 def main():
     sysd = SystemDynamicsWithSdeint(number_of_agents=10,
                                     k=1,
@@ -130,50 +129,15 @@ def main():
                                     utility_of_choices=[0.25,0.50,0.75,1],
                                     initial_experiences=[1, 0.75, 0.50, 0.25],
                                     discount_rate=0.99,
-                                    sd=0,
-                                    rotation_time=100,
+                                    sd=0.3,
+                                    rotation_time=200,
                                     flag=True)
 
     sysd.solve(time_vector=np.linspace(0, 1000, 500))
 
-
-def generate_stat():
-
-    time_vector = np.linspace(0, 1000, 500)
-
-    area_array = []
-    standard_deviation = []
-    ######### Generating statistics #############
-    for i in frange(0.0,10.0,0.1):
-        sysd = SystemDynamicsWithSdeint(number_of_agents=10,
-                                        k=1,
-                                        alpha=2,
-                                        utility_of_choices=[1, 0.50, 0.75, 1],
-                                        initial_experiences=[1, 0.75, 0.50, 0.25],
-                                        discount_rate=0.99,
-                                        sd=i,
-                                        rotation_time=200,
-                                        flag=True)
-
-        area_array.append(sysd.return_area(time_vector))
-        standard_deviation.append(i)
-
-    plt.plot(standard_deviation, area_array, label="test")
-    plt.xlabel('standard deviation')
-    plt.ylabel('area')
-    # plt.legend()
-    plt.show()
-
-
-def frange(start, stop, step):
-    i = start
-    while i<stop:
-        yield i
-        i += step
-
 if __name__ == "__main__":
-    #main()
-    generate_stat()
+    main()
+
 
 
 
