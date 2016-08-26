@@ -69,8 +69,8 @@ class SystemDynamicsStatGenerator:
     def find_maximum(self, x0):
         minimizer_kwargs = {"method": "BFGS"}
         #x0 = np.array(0.2)
-        #ret = basinhopping(self.fun, x0, minimizer_kwargs=minimizer_kwargs)
-        ret = differential_evolution(self.fun, x0)
+        ret = basinhopping(self.fun, x0, minimizer_kwargs=minimizer_kwargs)
+        #ret = differential_evolution(self.fun, x0)
         print("global maximum: x = %.4f, f(x0) = %.4f" % (ret.x, ret.fun))
 
 def main():
@@ -82,11 +82,13 @@ def main():
                                     discount_rate=0.99,
                                     step=0.01,
                                     end_sd=5,
-                                    rotation_time=300,
+                                    rotation_time=50,
                                     flag=True)
 
     #sdsg.generate_stat(time_vector = np.linspace(0, 1000, 500))
-    sdsg.find_maximum(x0 = [(0.5,1.5)])
+    x0 = np.array(1)
+    #x0 = [(0.5, 1.5)]
+    sdsg.find_maximum(x0)
 
 if __name__ == "__main__":
     main()
