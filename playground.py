@@ -31,10 +31,13 @@ import numpy as np
         #     print("using composite Simpson's rule " + '{:18.5f}'.format(simps(self.orbits_for_pi_ei[i], range(0, len(self.orbits_for_pi_ei[i])))))
         #     print("")
 
+#
+# time_vector = np.linspace(0, 100, 1)
+# print(time_vector)
+#
+# x = [0.1,0.2,0.3]
+# for i in x:
+#     print(i)
 
-time_vector = np.linspace(0, 100, 1)
-print(time_vector)
-
-x = [0.1,0.2,0.3]
-for i in x:
-    print(i)
+x =[[1,2,3],[4,5,6]]
+print(np.average(x,0))

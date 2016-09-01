@@ -41,9 +41,11 @@ class SystemDynamicsWithSdeint:
 
         # required for plotting
         self.orbits = []
+        self.orbits_utility = []
         self.orbits_for_sum_pi_ei = []
         for i in range(self.options):
             self.orbits.append([])
+            self.orbits_utility.append([])
 
     def rotation_of_utilitities(self):
         self.utility_of_choices = np.roll(self.utility_of_choices,1)
@@ -65,6 +67,7 @@ class SystemDynamicsWithSdeint:
         # plotting stuff
         for i in range(self.options):
             self.orbits[i].append(options_probability[i])
+            self.orbits_utility[i].append(pi_qi_flux[i])
             if experience[i] < 0:
                 experience[i] = 0
 
@@ -111,25 +114,38 @@ class SystemDynamicsWithSdeint:
         plt.ylabel('experience')
 
         plt.subplot(313)
-        plt.plot(range(len(self.orbits_for_sum_pi_ei)), self.orbits_for_sum_pi_ei, label="test")
+        for i in range(self.options):
+            plt.plot(range(len(self.orbits_utility[i])), self.orbits_utility[i], label=("choice " + str(i)))
         plt.xlabel('time')
-        plt.ylabel('Sum(Pi * Ei)')
+        plt.ylabel('utility')
         # plt.legend(bbox_to_anchor=(1.1, 1.05))
         # plt.legend()
         plt.show()
 
+        # plt.subplot(313)
+        # plt.plot(range(len(self.orbits_for_sum_pi_ei)), self.orbits_for_sum_pi_ei, label="test")
+        # plt.xlabel('time')
+        # plt.ylabel('Sum(Pi * Ei)')
+        # plt.legend(bbox_to_anchor=(1.1, 1.05))
+        # plt.legend()
+        # plt.show()
+
     def return_area(self, time_vector=np.linspace(0, 10, 10000)):
-            soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
-            return trapz(self.orbits_for_sum_pi_ei, range(0, len(self.orbits_for_sum_pi_ei)))
+        soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
+        return trapz(self.orbits_for_sum_pi_ei, range(0, len(self.orbits_for_sum_pi_ei)))
+
+    def return_average_utility(self,time_vector=np.linspace(0, 10, 10000)):
+        soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
+        return np.average(np.average(self.orbits_utility,0))
 
 def main():
-    sysd = SystemDynamicsWithSdeint(number_of_agents=10,
+    sysd = SystemDynamicsWithSdeint(number_of_agents=100,
                                     k=1,
                                     alpha=2,
                                     utility_of_choices=[0.25,0.50,0.75,1],
-                                    initial_experiences=[1, 0.75, 0.50, 0.25],
+                                    initial_experiences=[0.001, 0.001, 0.001, 0.001],
                                     discount_rate=0.99,
-                                    sd=0.3,
+                                    sd=5.5,
                                     rotation_time=200,
                                     flag=True)
 

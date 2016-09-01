@@ -156,9 +156,12 @@ class Agent_Based_Decision_Model:
 
 
     def run(self, steps, rotation_step, flag, noise_flag):
+        j = 0
         for i in range(steps):
-            if i == rotation_step and flag == True:
+            j += 1
+            if j == rotation_step and flag == True:
                 self.rotation_of_utilitities()
+                j = 0
             self.step(noise_flag)
         self.plot()
 
