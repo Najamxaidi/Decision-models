@@ -43,10 +43,12 @@ class Agent_Based_Decision_Model:
         # required for plotting
         self.orbits = []
         self.exp_orbits = []
+        self.orbits_utility = []
 
         for i in range(self.options):
             self.orbits.append([])
             self.exp_orbits.append([])
+            self.orbits_utility.append([])
 
     def step(self, noise_flag):
 
@@ -101,57 +103,40 @@ class Agent_Based_Decision_Model:
         for i in range(self.options):
             self.orbits[i].append(count_of_choices[i])
             self.exp_orbits[i].append(self.new_exp[i])   ####-----
+            self.orbits_utility[i].append(temp_utility[i])
 
     def rotation_of_utilitities(self):
         self.utility_of_choices = np.roll(self.utility_of_choices,1)
 
     def plot(self):
-
-        # print(self.orbits[0])
-        # print(self.orbits[1])
-        # print(self.orbits[2])
-        # print(self.orbits[3])
-        # print(self.orbits[4])
-        # print(self.orbits[5])
-        # print(self.orbits[6])
-        # print(self.orbits[7])
-        # print(self.orbits[8])
-        # print(self.orbits[9])
-        # print(self.orbits[10])
-        # print(self.orbits[11])
-        # print(self.orbits[12])
-        # print(self.orbits[13])
-        # print(self.orbits[14])
-        # print(self.orbits[15])
-
         #print the area first
-        for i in range(self.options):
-            print("option " + str(i) + " has area under the curve as:")
-            print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(self.orbits[i], range(0, len(self.orbits[i])))))
+        # for i in range(self.options):
+        #     print("option " + str(i) + " has area under the curve as:")
+        #     print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(self.orbits[i], range(0, len(self.orbits[i])))))
         #     print("using composite Simpson's rule " + '{:18.5f}'.format(simps(soln[:, i], range(0, len(soln)))))
-
 
         # plot the graphs
 
         plt.figure(1)
-        plt.subplot(211)
+        plt.subplot(311)
         for i in range(len(self.orbits)):
             plt.plot(range(len(self.orbits[i])), self.orbits[i], label=("choice " + str(i)))
-        #plt.rc('lines', linewidth=2.0)
         plt.ylim(-10, self.numberOfAgents+10)
         plt.ylabel('number of agents')
-        #plt.xlabel('time step')
-        #plt.legend()
         plt.title('1st: number of agents vs time steps -- 2nd: experience of agents vs time steps')
 
-        plt.subplot(212)
+        plt.subplot(312)
         for i in range(len(self.exp_orbits)):
             plt.plot(range(len(self.exp_orbits[i])), self.exp_orbits[i], label=("choice " + str(i)))
-        #plt.rc('lines', linewidth=2.0)
         plt.ylabel('experience of agents')
         plt.xlabel('time step')
         #plt.legend()
-        #plt.title('experience of agents vs time steps')
+
+        plt.subplot(313)
+        for i in range(len(self.orbits_utility)):
+            plt.plot(range(len(self.orbits_utility[i])), self.orbits_utility[i], label=("choice " + str(i)))
+        plt.ylabel('utility of agents')
+        plt.xlabel('time step')
         plt.show()
 
 
@@ -165,18 +150,19 @@ class Agent_Based_Decision_Model:
             self.step(noise_flag)
         self.plot()
 
+    def return_average_utility(self,steps,rotation_step, flag, noise_flag):
+        self.run(steps,rotation_step, flag, noise_flag)
+        return np.average(np.average(self.orbits_utility,0))
 
 
 def main():
-    steps = 10
-    rotation_step = 50
-    flag = False
-    noise_flag = False
+    steps = 1000
+    rotation_step = 200
+    flag = True
+    noise_flag = True
     d = Agent_Based_Decision_Model(number_of_agents= 10, k = 1, alpha = 2,
-                                   utility_of_choices= [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
-                                              0.5],
-                                   initial_experiences=[0.10, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20, 0.21, 0.22, 0.23,
-                                               0.24, 0.25, 0.10],
+                                   utility_of_choices= [0.25,0.50,0.75,1],
+                                   initial_experiences=[0.001, 0.001, 0.001, 0.001],
                                    discount_rate=1, noise_standard_deviation=0)
 
     d.run(steps,rotation_step, flag, noise_flag)

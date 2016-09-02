@@ -100,16 +100,6 @@ class SystemDynamicsStatGenerator:
         print("global maximum: x = %.4f, f(x0) = %.4f" % (ret.x, ret.fun))
 
 def main():
-    # sdsg = SystemDynamicsStatGenerator(number_of_agents=100,
-    #                                 k=1,
-    #                                 alpha=2,
-    #                                 utility_of_choices=[0.25,0.50],
-    #                                 initial_experiences=[0.0001, 0.0001],
-    #                                 discount_rate=0.99,
-    #                                 step=0.01,
-    #                                 end_sd=20,
-    #                                 rotation_time=50,
-    #                                 flag=True)
 
     sdsg = SystemDynamicsStatGenerator(number_of_agents=100,
                                     k=1,
