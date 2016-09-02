@@ -140,7 +140,7 @@ class Agent_Based_Decision_Model:
         plt.show()
 
 
-    def run(self, steps, rotation_step, flag, noise_flag):
+    def run(self, steps, rotation_step, flag, noise_flag, plotting):
         j = 0
         for i in range(steps):
             j += 1
@@ -148,10 +148,14 @@ class Agent_Based_Decision_Model:
                 self.rotation_of_utilitities()
                 j = 0
             self.step(noise_flag)
-        self.plot()
 
-    def return_average_utility(self,steps,rotation_step, flag, noise_flag):
-        self.run(steps,rotation_step, flag, noise_flag)
+        if plotting == True:
+            self.plot()
+
+
+
+    def return_average_utility(self,steps,rotation_step):
+        self.run(steps,rotation_step, True, True, plotting=False)
         return np.average(np.average(self.orbits_utility,0))
 
 
@@ -160,12 +164,12 @@ def main():
     rotation_step = 200
     flag = True
     noise_flag = True
-    d = Agent_Based_Decision_Model(number_of_agents= 10, k = 1, alpha = 2,
+    d = Agent_Based_Decision_Model(number_of_agents= 100, k = 1, alpha = 2,
                                    utility_of_choices= [0.25,0.50,0.75,1],
                                    initial_experiences=[0.001, 0.001, 0.001, 0.001],
-                                   discount_rate=1, noise_standard_deviation=0)
+                                   discount_rate=1, noise_standard_deviation=0.1)
 
-    d.run(steps,rotation_step, flag, noise_flag)
+    d.run(steps,rotation_step, flag, noise_flag, plotting=True)
 
 
 if __name__ == "__main__":
