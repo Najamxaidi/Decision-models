@@ -152,8 +152,6 @@ class Agent_Based_Decision_Model:
         if plotting == True:
             self.plot()
 
-
-
     def return_average_utility(self,steps,rotation_step):
         self.run(steps,rotation_step, True, True, plotting=False)
         return np.average(np.average(self.orbits_utility,0))
