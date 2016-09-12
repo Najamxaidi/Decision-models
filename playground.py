@@ -39,5 +39,7 @@ import numpy as np
 # for i in x:
 #     print(i)
 
-x =[[1,2,3],[4,5,6]]
-print(np.average(x,0))
+x =[1,2,3,4]
+print(x[0])
+y = np.array([(x[0] + x[1]), (x[2] + x[3])])
+print(y)
