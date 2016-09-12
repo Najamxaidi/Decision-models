@@ -52,19 +52,13 @@ class Agent_Based_Decision_Model:
 
     def step(self, noise_flag):
 
-        # this array will contain the choices taken by each agent in the current step.
-        # the choice taken depends upon the probability of the choices. This array needs to be cleared in
-        # each step to contain information only related to that step.
-
-        #agent_choices = np.zeros((self.numberOfAgents,), dtype=np.int)
-
         # Equation 3.1 starts
         # calculate the probability based upon the initial experiences
 
-        base = np.sum(np.power((self.new_exp + self.k), self.alpha))       ####-----
+        base = np.sum(np.power((self.new_exp + self.k), self.alpha))
 
         # calculate probability
-        self.options_Probability = (np.power((self.new_exp + self.k), self.alpha)) / base   ####-----
+        self.options_Probability = (np.power((self.new_exp + self.k), self.alpha)) / base
 
         # Equation 3.1 ends
 
@@ -89,20 +83,19 @@ class Agent_Based_Decision_Model:
             noise = np.array(np.random.normal(0, self.noise_standard_deviation, self.options))
         else:
             noise = 0
+
         # previous experience is discounted
         # new experience is calculated
         # previous experience is updated
         # check equation 3.2
 
         self.previous_exp *= self.discount  # row * perv exp
-        #self.new_exp = (self.options_Probability * temp_utility * self.numberOfAgents) + noise
         self.new_exp = (temp_utility) + self.previous_exp + noise  ##-----
-        #self.previous_exp += self.new_exp
 
         # for plotting
         for i in range(self.options):
             self.orbits[i].append(count_of_choices[i])
-            self.exp_orbits[i].append(self.new_exp[i])   ####-----
+            self.exp_orbits[i].append(self.new_exp[i])
             self.orbits_utility[i].append(temp_utility[i])
 
     def rotation_of_utilitities(self):
@@ -122,23 +115,23 @@ class Agent_Based_Decision_Model:
         for i in range(len(self.orbits)):
             plt.plot(range(len(self.orbits[i])), self.orbits[i], label=("choice " + str(i)))
         plt.ylim(-10, self.numberOfAgents+10)
-        plt.ylabel('number of agents')
-        plt.title('1st: number of agents vs time steps -- 2nd: experience of agents vs time steps')
+        plt.ylabel('agents')
+        plt.title('1st: number of agents vs time steps -- 2nd: experience of agents vs time steps \n'
+                  '3rd: utility of agents vs time steps')
 
         plt.subplot(312)
         for i in range(len(self.exp_orbits)):
             plt.plot(range(len(self.exp_orbits[i])), self.exp_orbits[i], label=("choice " + str(i)))
-        plt.ylabel('experience of agents')
+        plt.ylabel('experience')
         plt.xlabel('time step')
-        #plt.legend()
 
         plt.subplot(313)
         for i in range(len(self.orbits_utility)):
             plt.plot(range(len(self.orbits_utility[i])), self.orbits_utility[i], label=("choice " + str(i)))
-        plt.ylabel('utility of agents')
+        plt.ylabel('utility')
         plt.xlabel('time step')
+        plt.legend(bbox_to_anchor=(1.1,0.5))
         plt.show()
-
 
     def run(self, steps, rotation_step, flag, noise_flag, plotting):
         j = 0

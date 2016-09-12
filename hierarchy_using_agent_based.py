@@ -134,13 +134,22 @@ class Hierarchy:
 
         for i in range(self.options):
             self.number_of_agents_for_one[i].append(count_of_choices_for_node_one[i])
-            self.exp_for_one[i].append(self.new_exp_for_node_one[i])
+            if self.new_exp_for_node_one[i] < 0:
+                self.exp_for_one[i].append(0)
+            else:
+                self.exp_for_one[i].append(self.new_exp_for_node_one[i])
 
             self.number_of_agents_for_two[i].append(count_of_choices_for_node_two[i])
-            self.exp_for_two[i].append(self.new_exp_for_node_two[i])
+            if self.new_exp_for_node_two[i] < 0:
+                self.exp_for_two[i].append(0)
+            else:
+                self.exp_for_two[i].append(self.new_exp_for_node_two[i])
 
             self.number_of_agents_for_three[i].append(count_of_choices_for_node_three[i])
-            self.exp_for_three[i].append(self.new_exp_for_node_three[i])
+            if self.new_exp_for_node_three[i] < 0:
+                self.exp_for_three[i].append(0)
+            else:
+                self.exp_for_three[i].append(self.new_exp_for_node_three[i])
 
     def run(self, steps, rotation_step, rotation_flag, noise_flag, plotting):
         j = 0
