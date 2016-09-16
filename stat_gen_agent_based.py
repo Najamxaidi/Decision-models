@@ -1,4 +1,5 @@
 import agent_based_model_for_any_number_of_choices as agentb
+import hierarchy_using_agent_based as agenth
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -40,6 +41,36 @@ class AgentBasedStatGenerator:
         # plt.legend()
         plt.show()
 
+    def generate_utility_sweep_using_hierarchy(self, steps, rotation_step,util_flag):
+        utility_array_for_node_2 = []
+        utility_array_for_node_3 = []
+        standard_deviation = []
+        ######### Generating statistics #############
+        for i in self.frange(0.1, self.end_sd, self.step_for_sd):
+            agb = agenth.Hierarchy(number_of_agents= self.number_of_agents,
+                                    k = self.k, alpha = self.alpha,
+                                    utility_of_choices = self.utility_of_choices,
+                                    initial_experiences=self.experiences_of_choices,
+                                    discount_rate=[self.discount_rate,self.discount_rate,self.discount_rate],
+                                    noise_standard_deviation=[i,i,i],
+                                    utility_flag = util_flag)
+
+            utility_array_for_node_2.append(agb.return_average_utility_for_node2(steps, rotation_step))
+            utility_array_for_node_3.append(agb.return_average_utility_for_node3(steps, rotation_step))
+            standard_deviation.append(i)
+
+        plt.figure(1)
+        plt.subplot(211)
+        plt.plot(standard_deviation, utility_array_for_node_2, label="test")
+        plt.xlabel('standard deviation')
+        plt.ylabel('average utility')
+
+        plt.subplot(212)
+        plt.plot(standard_deviation, utility_array_for_node_3, label="test")
+        plt.xlabel('standard deviation')
+        plt.ylabel('average utility')
+        plt.show()
+
     def frange(self, start, stop, step):
         i = start
         while i < stop:
@@ -51,17 +82,17 @@ def main():
     absg = AgentBasedStatGenerator(number_of_agents=100,
                                     k=1,
                                     alpha=2,
-                                    utility_of_choices=[1.5, 3.0],
-                                    initial_experiences=[0.001, 0.003],
-                                    discount_rate=0.95,
-                                    step_for_sd=0.5,
-                                    end_sd=1000)
+                                    utility_of_choices=[50,50,1,99],
+                                    initial_experiences=[50, 50, 100, 0],
+                                    discount_rate=1,
+                                    step_for_sd=10,
+                                    end_sd=5000)
 
 
     steps = 1000
-    rotation_step = 200
+    rotation_step = [100,400]
 
-    absg.generate_utility_sweep(steps,rotation_step)
+    absg.generate_utility_sweep_using_hierarchy(steps,rotation_step, util_flag=False)
 
 if __name__ == "__main__":
     main()

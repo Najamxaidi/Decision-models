@@ -4,14 +4,19 @@ import matplotlib.pyplot as plt
 
 class Hierarchy:
     def __init__(self, number_of_agents, k, alpha, utility_of_choices,
-                 initial_experiences, discount_rate, noise_standard_deviation):
+                 initial_experiences, discount_rate, noise_standard_deviation, utility_flag):
 
         self.numberOfAgents = number_of_agents
         self.k = k
         self.alpha = alpha
+        self.utillity_flag = utility_flag
 
-        self.utility_of_choices_for_node_two = np.array(utility_of_choices)
-        self.utility_of_choices_for_node_three = np.array(utility_of_choices)
+        if utility_flag:
+            self.utility_of_choices_for_node_two = np.array(utility_of_choices)
+            self.utility_of_choices_for_node_three = np.array(utility_of_choices)
+        else:
+            self.utility_of_choices_for_node_two = np.array([utility_of_choices[0],utility_of_choices[1]])
+            self.utility_of_choices_for_node_three = np.array([utility_of_choices[2],utility_of_choices[3]])
 
         self.previous_exp_for_node_one = np.array([initial_experiences[0] + initial_experiences[1],
                                                   initial_experiences[2] + initial_experiences[3]])
@@ -47,6 +52,9 @@ class Hierarchy:
         self.exp_for_one = [[], []]
         self.exp_for_two = [[], []]
         self.exp_for_three = [[], []]
+
+        self.utility_for_node_two = [[],[]]
+        self.utility_for_node_three = [[],[]]
 
     def step(self, noise_flag):
 
@@ -93,8 +101,12 @@ class Hierarchy:
             count_of_choices_for_node_two[i] = np.size(np.where(agent_choices_for_node_two == i))
 
         # calculate the total utility of the options
-        temp_utility_for_node_two = count_of_choices_for_node_two * [self.utility_of_choices_for_node_two[0],
+        if self.utillity_flag:
+            temp_utility_for_node_two = count_of_choices_for_node_two * [self.utility_of_choices_for_node_two[0],
                                                                      self.utility_of_choices_for_node_two[1]]
+        else:
+            temp_utility_for_node_two = count_of_choices_for_node_two * self.utility_of_choices_for_node_two
+
 
         self.previous_exp_for_node_two *= self.discount_for_node_two
         self.new_exp_for_node_two = (temp_utility_for_node_two) + self.previous_exp_for_node_two + noise_for_node_two
@@ -115,8 +127,11 @@ class Hierarchy:
             count_of_choices_for_node_three[i] = np.size(np.where(agent_choices_for_node_three == i))
 
         # calculate the total utility of the options
-        temp_utility_for_node_three = count_of_choices_for_node_three * [self.utility_of_choices_for_node_three[2],
+        if self.utillity_flag:
+            temp_utility_for_node_three = count_of_choices_for_node_three * [self.utility_of_choices_for_node_three[2],
                                                                      self.utility_of_choices_for_node_three[3]]
+        else:
+            temp_utility_for_node_three = count_of_choices_for_node_three * self.utility_of_choices_for_node_three
 
         self.previous_exp_for_node_three *= self.discount_for_node_three
         self.new_exp_for_node_three = (temp_utility_for_node_three) + self.previous_exp_for_node_three \
@@ -140,12 +155,14 @@ class Hierarchy:
                 self.exp_for_one[i].append(self.new_exp_for_node_one[i])
 
             self.number_of_agents_for_two[i].append(count_of_choices_for_node_two[i])
+            self.utility_for_node_two[i].append(temp_utility_for_node_two)
             if self.new_exp_for_node_two[i] < 0:
                 self.exp_for_two[i].append(0)
             else:
                 self.exp_for_two[i].append(self.new_exp_for_node_two[i])
 
             self.number_of_agents_for_three[i].append(count_of_choices_for_node_three[i])
+            self.utility_for_node_three[i].append(temp_utility_for_node_three)
             if self.new_exp_for_node_three[i] < 0:
                 self.exp_for_three[i].append(0)
             else:
@@ -154,21 +171,32 @@ class Hierarchy:
     def run(self, steps, rotation_step, rotation_flag, noise_flag, plotting):
         j = 0
         k = 0
+        l = 0
         for i in range(steps):
             j += 1
             k += 1
+            l += 1
+
             if j == rotation_step[0] and rotation_flag == True:
-                self.rotation_of_utilitities_for_node_2()
+                self.rotation_of_utilitities_for_node_1()
                 j = 0
 
             if k == rotation_step[1] and rotation_flag == True:
-                self.rotation_of_utilitities_for_node_3()
+                self.rotation_of_utilitities_for_node_2()
                 k = 0
+
+            if l == rotation_step[2] and rotation_flag == True:
+                self.rotation_of_utilitities_for_node_3()
+                l = 0
 
             self.step(noise_flag)
 
         if plotting == True:
             self.plot()
+
+    def rotation_of_utilitities_for_node_1(self):
+        self.utility_of_choices_for_node_two, self.utility_of_choices_for_node_three \
+            = self.utility_of_choices_for_node_three, self.utility_of_choices_for_node_two
 
     def rotation_of_utilitities_for_node_2(self):
         self.utility_of_choices_for_node_two = np.roll(self.utility_of_choices_for_node_two,1)
@@ -227,21 +255,32 @@ class Hierarchy:
         plt.legend()
         plt.show()
 
+    def return_average_utility_for_node2(self, steps, rotation_step):
+        self.run(steps, rotation_step, True, True, plotting=False)
+        return np.average(np.average(self.utility_for_node_two, 0))
+
+    def return_average_utility_for_node3(self, steps, rotation_step):
+        self.run(steps, rotation_step, True, True, plotting=False)
+        return np.average(np.average(self.utility_for_node_three, 0))
+
 
 def main():
     steps = 1000
-    rotation_step = [200, 100]
+    rotation_step = [400, 200, 200]
     rotation_flag = True
-    noise_flag = True
+    noise_flag = False
     d = Hierarchy(number_of_agents= 100,
                   k = 1, alpha = 2,
-                  utility_of_choices= [50,20,150,70],
-                  initial_experiences=[20, 150, 10, 30],
+                  utility_of_choices= [10,20,50,80],
+                  initial_experiences=[50, 50, 50, 50],
                   discount_rate=[1,1,1],
-                  noise_standard_deviation=[100,100,100])
+                  noise_standard_deviation=[0,0,0],
+                  utility_flag = False) # if false than swap utilities in cluster otherwise shift utilities
 
     d.run(steps,rotation_step, rotation_flag, noise_flag, plotting=True)
 
+    #print(d.return_average_utility_for_node2(steps,rotation_step))
+    #print(d.return_average_utility_for_node3(steps, rotation_step))
 
 if __name__ == "__main__":
     main()

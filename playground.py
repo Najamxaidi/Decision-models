@@ -39,7 +39,15 @@ import numpy as np
 # for i in x:
 #     print(i)
 
-x =[1,2,3,4]
-print(x[0])
-y = np.array([(x[0] + x[1]), (x[2] + x[3])])
-print(y)
+# x =[1,2,3,4]
+# print(x[0])
+# y = np.array([(x[0] + x[1]), (x[2] + x[3])])
+# print(y)
+
+a = [1,2]
+b = [3,4]
+
+a,b = b,a
+
+print(a)
+print(b)
