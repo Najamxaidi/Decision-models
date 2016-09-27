@@ -1,5 +1,5 @@
 import numpy as np
-#
+import matplotlib.pyplot as plt
 #
 #
 # a = np.array([1,2,3])
@@ -44,10 +44,33 @@ import numpy as np
 # y = np.array([(x[0] + x[1]), (x[2] + x[3])])
 # print(y)
 
-a = [1,2]
-b = [3,4]
+# a = [1,2]
+# b = [3,4]
+#
+# a,b = b,a
+#
+# print(a)
+# print(b)
 
-a,b = b,a
+#print(ord('A'))
 
-print(a)
-print(b)
+# a = np.array([[0,0,0],[0,0,0]])
+# b = np.array([[1,2,3],[4,5,6]])
+#
+# a[0] += b[0]
+# a[0] += b[1]
+#
+# print(a)
+#
+# print(a/4)
+
+
+Fs = 8000
+f = 5
+sample = 8000
+x = np.arange(sample)
+y = np.sin(2 * np.pi * f * x / Fs + 180)
+plt.plot(x, y)
+plt.xlabel('voltage(V)')
+plt.ylabel('sample(n)')
+plt.show()
