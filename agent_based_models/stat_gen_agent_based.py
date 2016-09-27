@@ -1,7 +1,8 @@
-import agent_based_model_for_any_number_of_choices as agentb
-import hierarchy_using_agent_based as agenth
 import matplotlib.pyplot as plt
 import numpy as np
+
+import agent_based_models.hierarchy_using_agent_based as agenth
+from agent_based_models import agent_based_model_for_any_number_of_choices as agentb
 
 
 class AgentBasedStatGenerator:

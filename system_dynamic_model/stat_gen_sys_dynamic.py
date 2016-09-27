@@ -1,8 +1,8 @@
-import system_dynamics_using_sdeint as systemd
-from scipy.optimize import basinhopping
-from scipy.optimize import differential_evolution
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.optimize import basinhopping
+
+from system_dynamic_model import system_dynamics_using_sdeint as systemd
 
 
 class SystemDynamicsStatGenerator:
