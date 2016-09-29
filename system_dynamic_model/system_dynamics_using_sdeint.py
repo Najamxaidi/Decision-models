@@ -145,7 +145,7 @@ def main():
                                     utility_of_choices=[0.25,0.50,0.75,1],
                                     initial_experiences=[0.001, 0.001, 0.001, 0.001],
                                     discount_rate=0.99,
-                                    sd=5.5,
+                                    sd=0,
                                     rotation_time=200,
                                     flag=True)
 

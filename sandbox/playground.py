@@ -64,13 +64,22 @@ import matplotlib.pyplot as plt
 #
 # print(a/4)
 
+#
+# Fs = 8000
+# f = 5
+# sample = 8000
+# x = np.arange(sample)
+# y = np.sin(2 * np.pi * f * x / Fs + 180)
+# plt.plot(x, y)
+# plt.xlabel('voltage(V)')
+# plt.ylabel('sample(n)')
+# plt.show()
+#
+# temp = [[1,2,3,4],[1,2,3,4],[1,2,3,4],[1,2,3,4]]
+#
+# #temp[0],temp[1] = np.array([5,5]) - np.array([1,1])
+#
+# print(temp[:, 0])
 
-Fs = 8000
-f = 5
-sample = 8000
-x = np.arange(sample)
-y = np.sin(2 * np.pi * f * x / Fs + 180)
-plt.plot(x, y)
-plt.xlabel('voltage(V)')
-plt.ylabel('sample(n)')
-plt.show()
+if [1,1] == [1,1]:
+    print("h")

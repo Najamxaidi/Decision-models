@@ -71,7 +71,6 @@ class SystemDynamics:
                       args=(self.number_of_agents, self.alpha, self.k,self.discount_rate,
                             self.options, self.utility_of_choices))
 
-
         for i in range(self.options):
             print("option " + str(i) + " has area under the curve as:")
             print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(soln[:, i], range(0, len(soln)))))
