@@ -13,7 +13,9 @@ class SystemDynamicsWithSdeint:
     """
 
     def __init__(self, number_of_agents, k, alpha, utility_of_choices, initial_experiences,
-                 discount_rate = 0.0, sd = 0.01, rotation_time = 1000, flag = False):
+                 discount_rate, sd, rotation_time,
+                 rotation_flag, use_fun_for_utilities, frequencies,
+                  phase):
         """
 
         :param number_of_agents: an integer with the total number of agents
@@ -23,12 +25,10 @@ class SystemDynamicsWithSdeint:
         :param initial_experiences: an array telling the initial experiences of choices
         :param discount_rate: a number between 0 and 1
         """
-        assert 0 <= discount_rate <= 1, "Discount rate should be between 0 and 1"
 
         self.number_of_agents = number_of_agents
         self.k = k
         self.alpha = alpha  # model parameter
-        self.utility_of_choices = np.array(utility_of_choices)
         self.experiences_of_choices = np.array(initial_experiences)
         self.discount_rate = discount_rate  # evaporation rate
 
@@ -37,15 +37,34 @@ class SystemDynamicsWithSdeint:
         self.sd = sd
         self.count = 0
         self.rotation_time = rotation_time
-        self.flag = flag
+        self.flag = rotation_flag
+        self.use_fun_for_utilities = use_fun_for_utilities
+        self.frequencies = frequencies
+        self.phase = phase
+
+        if use_fun_for_utilities:
+            a = sine_fun(frequency=frequencies[0], t=0, fs=8000, phase=self.phase[0])
+            b = 1 - a
+
+            a1 = sine_fun(frequency=frequencies[1], t=0, fs=8000, phase=self.phase[1])
+            a2 = 1 - a1
+
+            b1 = sine_fun(frequency=frequencies[2], t=0, fs=8000, phase=self.phase[2])
+            b2 = 1 - b1
+
+            self.utility_of_choices = np.array([a1,a2,b1,b2])
+        else:
+            self.utility_of_choices = np.array(utility_of_choices)
 
         # required for plotting
         self.orbits = []
         self.orbits_utility = []
         self.orbits_for_sum_pi_ei = []
+        self.aggregate_utility = []
         for i in range(self.options):
             self.orbits.append([])
             self.orbits_utility.append([])
+            self.aggregate_utility.append([])
 
     def rotation_of_utilitities(self):
         self.utility_of_choices = np.roll(self.utility_of_choices,1)
@@ -57,6 +76,18 @@ class SystemDynamicsWithSdeint:
             self.utility_of_choices = np.roll(self.utility_of_choices, 1)
             self.count = 0
 
+        if self.use_fun_for_utilities:
+            a = sine_fun(frequency=self.frequencies[0], t=self.count, fs=8000, phase=self.phase[0])
+            b = 1 - a
+
+            a1 = sine_fun(frequency=self.frequencies[1], t=self.count, fs=8000, phase=self.phase[1])
+            a2 = 1 - a1
+
+            b1 = sine_fun(frequency=self.frequencies[2], t=self.count, fs=8000, phase=self.phase[2])
+            b2 = 1 - b1
+
+            self.utility_of_choices = np.array([a1, a2, b1, b2])
+
         # Equation 3.1 starts (this is pi)
         # calculate the probability based upon the initial experiences
         options_probability = (np.power((experience + self.k), self.alpha)) / np.sum(np.power((experience + self.k), self.alpha))
@@ -66,6 +97,7 @@ class SystemDynamicsWithSdeint:
 
         # plotting stuff
         for i in range(self.options):
+            self.aggregate_utility[i].append(self.utility_of_choices[i])
             self.orbits[i].append(options_probability[i])
             self.orbits_utility[i].append(pi_qi_flux[i])
             if experience[i] < 0:
@@ -94,41 +126,36 @@ class SystemDynamicsWithSdeint:
         low_values_indices = soln < 0  # Where values are low
         soln[low_values_indices] = 0
 
-        ##-------Print the area under the curve over here ---------###
-        #print("using composite trapezoidal rule " + '{:18.5f}'.format(trapz(self.orbits_for_sum_pi_ei, range(0, len(self.orbits_for_sum_pi_ei)))))
+        self.plot(soln,time_vector)
 
+    def plot(self, soln, time_vector):
         plt.figure(1)
-        plt.subplot(311)
+        plt.subplot(411)
         for i in range(len(self.orbits)):
             plt.plot(range(len(self.orbits[i])), self.orbits[i], label=("choice " + str(i)))
-        #plt.ylim(-1, 1)
+        # plt.ylim(-1, 1)
         plt.ylabel('proportion')
         plt.title('1st: proportion of agents vs time steps -- 2nd: experience of agents vs time steps')
 
-        plt.subplot(312)
+        plt.subplot(412)
         for i in range(self.options):
             plt.plot(time_vector, soln[:, i], label=("choice " + str(i)))
-        #plt.ylim(ymin=-500)
-        plt.legend()
         plt.xlabel('time')
         plt.ylabel('experience')
 
-        plt.subplot(313)
+        plt.subplot(413)
         for i in range(self.options):
             plt.plot(range(len(self.orbits_utility[i])), self.orbits_utility[i], label=("choice " + str(i)))
         plt.xlabel('time')
-        plt.ylabel('utility')
-        # plt.legend(bbox_to_anchor=(1.1, 1.05))
-        # plt.legend()
-        plt.show()
+        plt.ylabel('utility gained')
 
-        # plt.subplot(313)
-        # plt.plot(range(len(self.orbits_for_sum_pi_ei)), self.orbits_for_sum_pi_ei, label="test")
-        # plt.xlabel('time')
-        # plt.ylabel('Sum(Pi * Ei)')
-        # plt.legend(bbox_to_anchor=(1.1, 1.05))
-        # plt.legend()
-        # plt.show()
+        plt.subplot(414)
+        for i in range(self.options):
+            plt.plot(range(len(self.aggregate_utility[i])), self.aggregate_utility[i], label=("choice " + str(i)))
+        plt.xlabel('time')
+        plt.ylabel('utility')
+        plt.legend()
+        plt.show()
 
     def return_area(self, time_vector=np.linspace(0, 10, 10000)):
         soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
@@ -138,16 +165,26 @@ class SystemDynamicsWithSdeint:
         soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
         return np.average(np.average(self.orbits_utility,0))
 
+
+def sine_fun(frequency, t, fs, phase):
+    y = (np.sin(2 * np.pi * frequency * t/ fs + phase) + 1) / 2
+    return y
+
+
 def main():
     sysd = SystemDynamicsWithSdeint(number_of_agents=100,
                                     k=1,
                                     alpha=2,
-                                    utility_of_choices=[0.25,0.50,0.75,1],
-                                    initial_experiences=[0.001, 0.001, 0.001, 0.001],
+                                    utility_of_choices=[0,0,0,0],
+                                    initial_experiences=[1, 1, 1, 1],
                                     discount_rate=0.99,
                                     sd=0,
                                     rotation_time=200,
-                                    flag=True)
+                                    rotation_flag=False,
+                                    use_fun_for_utilities = True,
+                                    frequencies = [50, 10, 30],
+                                    phase = [0, 0, 0]
+                                    )
 
     sysd.solve(time_vector=np.linspace(0, 1000, 500))
 

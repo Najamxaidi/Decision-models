@@ -1,14 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.optimize import basinhopping
-
 from system_dynamic_model import system_dynamics_using_sdeint as systemd
+from system_dynamic_model import hierarchy_using_sys_dynamics as syshiery
 
 
 class SystemDynamicsStatGenerator:
 
-    def __init__(self,number_of_agents, k, alpha, utility_of_choices, initial_experiences,
-                 discount_rate = 0.0, step = 0.01, end_sd = 10, rotation_time = 1000, flag = False):
+    def __init__(self,number_of_agents, k, alpha, utility_of_choices, initial_experiences, frequencies, phase,
+                 discount_rate, step, end_sd, rotation_time, rotation_flag = False, utility_flag=False,
+                                    use_fun_for_utilities=True):
 
         self.number_of_agents = number_of_agents
         self.k = k
@@ -19,33 +19,11 @@ class SystemDynamicsStatGenerator:
         self.step = step
         self.end_sd = end_sd
         self.rotation_time = rotation_time
-        self.flag = flag
-
-    def generate_stat(self, time_vector = np.linspace(0, 1000, 500)):
-
-        area_array = []
-        standard_deviation = []
-        ######### Generating statistics #############
-        for i in self.frange(0.0, self.end_sd, self.step):
-            sysd = systemd.SystemDynamicsWithSdeint(number_of_agents=self.number_of_agents,
-                                            k=self.k,
-                                            alpha=self.alpha,
-                                            utility_of_choices=self.utility_of_choices,
-                                            initial_experiences=self.experiences_of_choices,
-                                            discount_rate=self.discount_rate,
-                                            sd=i,
-                                            rotation_time=self.rotation_time,
-                                            flag=self.flag
-                                            )
-
-            area_array.append(sysd.return_area(time_vector))
-            standard_deviation.append(i)
-
-        plt.plot(standard_deviation, area_array, label="test")
-        plt.xlabel('standard deviation')
-        plt.ylabel('area')
-        # plt.legend()
-        plt.show()
+        self.utility_flag = utility_flag # how do I want rotation
+        self.use_fun_for_utilities = use_fun_for_utilities
+        self.frequencies = frequencies
+        self.phase = phase
+        self.rotation_flag = rotation_flag  # do I want rotation
 
     def generate_utility_sweep(self,time_vector = np.linspace(0, 1000, 500)):
         utility_array = []
@@ -60,7 +38,10 @@ class SystemDynamicsStatGenerator:
                                                     discount_rate=self.discount_rate,
                                                     sd=i,
                                                     rotation_time=self.rotation_time,
-                                                    flag=self.flag
+                                                    rotation_flag=self.rotation_flag,
+                                                    use_fun_for_utilities=self.use_fun_for_utilities,
+                                                    frequencies=self.frequencies,
+                                                    phase=self.phase
                                                     )
 
             utility_array.append(sysd.return_average_utility(time_vector))
@@ -72,51 +53,68 @@ class SystemDynamicsStatGenerator:
         # plt.legend()
         plt.show()
 
+    def generate_utility_sweep_using_hierarchy(self, time_vector, frequencies, phase):
+        utility_array_for_node_2 = []
+        utility_array_for_node_3 = []
+        standard_deviation = []
+        ######### Generating statistics #############
+        for i in self.frange(0.1, self.end_sd, self.step):
+            agb = syshiery.SystemDynamicsWithSdeint(number_of_agents= self.number_of_agents,
+                                    k = self.k, alpha = self.alpha,
+                                    utility_of_choices = self.utility_of_choices,
+                                    initial_experiences=self.experiences_of_choices,
+                                    discount_rate=self.discount_rate,
+                                    noise_standard_deviation=[i,i,i],
+                                    rotation_time=self.rotation_time,
+                                    rotation_flag=self.rotation_flag,
+                                    use_fun_for_utilities=self.use_fun_for_utilities, # utility flag should be false when using it
+                                    frequencies=frequencies,
+                                    phase=phase,
+                                    utility_flag=self.utility_flag)
+
+            utility_array_for_node_2.append(agb.return_average_utility_for_node2(time_vector))
+            utility_array_for_node_3.append(agb.return_average_utility_for_node3(time_vector))
+            standard_deviation.append(i)
+
+        plt.figure(1)
+        plt.subplot(211)
+        plt.plot(standard_deviation, utility_array_for_node_2, label="test")
+        plt.xlabel('standard deviation')
+        plt.ylabel('average utility \n at node A')
+
+        plt.subplot(212)
+        plt.plot(standard_deviation, utility_array_for_node_3, label="test")
+        plt.xlabel('standard deviation')
+        plt.ylabel('average utility  \n at node B')
+        plt.show()
+
     def frange(self, start, stop, step):
         i = start
         while i < stop:
             yield i
             i += step
 
-    def fun(self,i):
-        sysd = systemd.SystemDynamicsWithSdeint(number_of_agents=self.number_of_agents,
-                                                k=self.k,
-                                                alpha=self.alpha,
-                                                utility_of_choices=self.utility_of_choices,
-                                                initial_experiences=self.experiences_of_choices,
-                                                discount_rate=self.discount_rate,
-                                                sd=i[0],
-                                                rotation_time=self.rotation_time,
-                                                flag=self.flag
-                                                )
-        #return -1 * (sysd.return_area(time_vector = np.linspace(0, 1000, 500)))
-        return -1 * (sysd.return_average_utility(time_vector=np.linspace(0, 1000, 500)))
-
-    def find_maximum(self, x0):
-        minimizer_kwargs = {"method": "BFGS"}
-        #x0 = np.array(0.2)
-        ret = basinhopping(self.fun, x0, minimizer_kwargs=minimizer_kwargs)
-        #ret = differential_evolution(self.fun, x0)
-        print("global maximum: x = %.4f, f(x0) = %.4f" % (ret.x, ret.fun))
-
 def main():
 
     sdsg = SystemDynamicsStatGenerator(number_of_agents=100,
-                                    k=1,
+                                    k=100,
                                     alpha=2,
-                                    utility_of_choices=[1.5, 3.0],
-                                    initial_experiences=[0.001, 0.003],
-                                    discount_rate=0.95,
+                                    utility_of_choices=[0,0,0,0],
+                                    initial_experiences=[1,1,1,1],
+                                    frequencies=[50,10,30],
+                                    phase = [0,0,0],
+                                    discount_rate=[1,1,1],
                                     step=0.5,
-                                    end_sd=300,
-                                    rotation_time=20,
-                                    flag=True)
+                                    end_sd=30,
+                                    rotation_time=[0,0,0],
+                                    rotation_flag = False,
+                                    utility_flag=False,
+                                    use_fun_for_utilities=True)
 
-    #sdsg.generate_stat(time_vector = np.linspace(0, 1000, 500))
-    sdsg.generate_utility_sweep(time_vector = np.linspace(0, 1000, 500))
-    #x0 = np.array(30)
-    #x0 = [(0.5, 1.5)]
-    #sdsg.find_maximum(x0)
+    #sdsg.generate_utility_sweep(time_vector = np.linspace(0, 1000, 500))
+
+    sdsg.generate_utility_sweep_using_hierarchy(time_vector = np.linspace(0, 1000, 500), frequencies=[50, 10,30],
+                                                phase=[0,0,0])
 
 if __name__ == "__main__":
     main()

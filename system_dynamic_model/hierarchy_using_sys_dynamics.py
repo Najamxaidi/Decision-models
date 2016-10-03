@@ -283,7 +283,6 @@ class SystemDynamicsWithSdeint:
         for i in range(self.options):
             plt.plot(t, soln[:, i+2], label=("choice " + str(i)))
         plt.ylabel('experience of agents')
-        #plt.xlabel('time step')
 
         plt.subplot(313)
         for i in range(len(self.aggregated_utility_node3)):
@@ -297,6 +296,14 @@ class SystemDynamicsWithSdeint:
     # def return_average_utility(self,time_vector=np.linspace(0, 10, 10000)):
     #     soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
     #     return np.average(np.average(self.orbits_utility,0))
+
+    def return_average_utility_for_node2(self,time_vector=np.linspace(0, 10, 10000)):
+        soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
+        return np.average(np.average(self.utility_gained_at_node_two,0))
+
+    def return_average_utility_for_node3(self,time_vector=np.linspace(0, 10, 10000)):
+        soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
+        return np.average(np.average(self.utility_gained_at_node_three,0))
 
 
 def sine_fun(frequency, t, fs, phase):
@@ -314,8 +321,8 @@ def main():
                                     rotation_time=[0,0,0],
                                     rotation_flag=False,
                                     use_fun_for_utilities = True,
-                                    frequencies=[60,10,30],
-                                    phase=[15,85,125],
+                                    frequencies=[500,10,30],
+                                    phase=[0,0,0],
                                     utility_flag=False)
 
     sysd.solve(time_vector=np.linspace(0, 1000, 500))
