@@ -8,7 +8,7 @@ from agent_based_models import agent_based_model_for_any_number_of_choices as ag
 class AgentBasedStatGenerator:
 
     def __init__(self,number_of_agents, k, alpha, utility_of_choices, initial_experiences,
-                 discount_rate, step_for_sd, end_sd, utility_flag, use_fun_for_utilities, phase):
+                 discount_rate, step_for_sd, end_sd, utility_flag, use_fun_for_utilities):
 
         self.number_of_agents = number_of_agents
         self.k = k
@@ -20,9 +20,8 @@ class AgentBasedStatGenerator:
         self.end_sd = end_sd
         self.utility_flag = utility_flag
         self.use_fun_for_utilities = use_fun_for_utilities
-        self.phase = phase
 
-    def generate_utility_sweep(self, steps, rotation_step):
+    def generate_utility_sweep(self, steps, rotation_step, feq):
         utility_array = []
         standard_deviation = []
         ######### Generating statistics #############
@@ -33,7 +32,9 @@ class AgentBasedStatGenerator:
                                                     utility_of_choices=self.utility_of_choices,
                                                     initial_experiences=self.experiences_of_choices,
                                                     discount_rate=self.discount_rate,
-                                                    noise_standard_deviation=i
+                                                    noise_standard_deviation=i,
+                                                    use_fun_for_utilities=self.use_fun_for_utilities,
+                                                    frequencies=feq
                                                     )
 
             utility_array.append(agb.return_average_utility(steps, rotation_step))
@@ -44,7 +45,7 @@ class AgentBasedStatGenerator:
         plt.ylabel('average utility')
         plt.show()
 
-    def generate_utility_sweep_using_hierarchy(self, steps, rotation_step,rotation_flag,frequencies):
+    def generate_utility_sweep_using_hierarchy(self, steps, rotation_step,rotation_flag,frequencies,phase):
         utility_array_for_node_2 = []
         utility_array_for_node_3 = []
         standard_deviation = []
@@ -59,7 +60,7 @@ class AgentBasedStatGenerator:
                                     utility_flag = self.utility_flag,
                                     use_fun_for_utilities=self.use_fun_for_utilities, # utility flag should be false when using it
                                     frequencies=frequencies,
-                                    phase=self.phase)
+                                    phase=phase)
 
             utility_array_for_node_2.append(agb.return_average_utility_for_node2(steps, rotation_step,rotation_flag))
             utility_array_for_node_3.append(agb.return_average_utility_for_node3(steps, rotation_step,rotation_flag))
@@ -77,7 +78,7 @@ class AgentBasedStatGenerator:
         plt.ylabel('average utility  \n at node B')
         plt.show()
 
-    def average_run_using_hierarchy(self,number_of_runs, steps, rotation_step, rotation_flag, noise_flag, sd, frequencies):
+    def average_run_using_hierarchy(self,number_of_runs, steps, rotation_step, rotation_flag, noise_flag, sd, frequencies, phase):
 
         average_number_of_agents_for_one = np.array([np.zeros(steps), np.zeros(steps)])
         average_number_of_agents_for_two = np.array([np.zeros(steps), np.zeros(steps)])
@@ -97,7 +98,7 @@ class AgentBasedStatGenerator:
                                     utility_flag = self.utility_flag,  # if false than swap utilities in cluster otherwise shift utilities
                                     use_fun_for_utilities=self.use_fun_for_utilities,  # utility flag should be false when using it
                                     frequencies=frequencies,
-                                    phase = self.phase)
+                                    phase = phase)
 
             d.run(steps, rotation_step, rotation_flag, noise_flag, plotting=False)
 
@@ -187,27 +188,32 @@ def main():
                                     k=1,
                                     alpha=2,
                                     utility_of_choices=[0,0,0,0],
-                                    initial_experiences=[1, 2, 3, 10],
-                                    discount_rate=[1,1,1],
+                                    initial_experiences=[1, 2, 3, 4],
+                                    discount_rate= [1,1,1],
                                     step_for_sd=0.1,
-                                    end_sd=40,
+                                    end_sd=30,
                                     utility_flag=False,
-                                    use_fun_for_utilities=True,
-                                    phase=[0, 0, 0])
+                                    use_fun_for_utilities=True)
 
-    absg.generate_utility_sweep_using_hierarchy(steps = 1000,
-                                                rotation_step = [0,0,0],
-                                                rotation_flag=False,
-                                                frequencies=[50, 10, 30],
-                                                )
+    # absg.generate_utility_sweep(steps=1000,
+    #                             rotation_step=[0,0,0,0],
+    #                             feq=[50,10,30])
 
-    # absg.average_run_using_hierarchy(number_of_runs=100,
-    #                                  steps=1000,
-    #                                  rotation_step=[100,200,300],
-    #                                  rotation_flag=False,
-    #                                  noise_flag=False,
-    #                                  sd=[1,1,1],
-    #                                  frequencies=[50,10,30])
+    # absg.generate_utility_sweep_using_hierarchy(steps = 1000,
+    #                                             rotation_step = [0,0,0],
+    #                                             rotation_flag=False,
+    #                                             frequencies=[50, 10, 30],
+    #                                             phase=[0,0,0]
+    #                                             )
+
+    absg.average_run_using_hierarchy(number_of_runs=10,
+                                     steps=1000,
+                                     rotation_step=[100,200,300],
+                                     rotation_flag=False,
+                                     noise_flag=True,
+                                     sd=[1,1,1],
+                                     frequencies=[50,10,30],
+                                     phase=[0,0,0])
 
 if __name__ == "__main__":
     main()

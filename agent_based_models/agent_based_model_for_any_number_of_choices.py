@@ -10,7 +10,6 @@ class Agent_Based_Decision_Model:
     between multiple choices. The code follows but not completely replicates the
     equation given in the paper Dussutour (2009). An agent based model has been developed where
     multiple agents choose from the number of choices avaliable
-
     """
 
     def __init__(self, number_of_agents, k, alpha, utility_of_choices,
@@ -130,7 +129,7 @@ class Agent_Based_Decision_Model:
         # plot the graphs
 
         plt.figure(1)
-        plt.subplot(311)
+        plt.subplot(411)
         for i in range(len(self.orbits)):
             plt.plot(range(len(self.orbits[i])), self.orbits[i], label=("choice " + str(i)))
         plt.ylim(-10, self.numberOfAgents+10)
@@ -138,24 +137,24 @@ class Agent_Based_Decision_Model:
         plt.title('1st: number of agents vs time steps -- 2nd: experience of agents vs time steps \n'
                   '3rd: utility of agents vs time steps')
 
-        plt.subplot(312)
+        plt.subplot(412)
         for i in range(len(self.exp_orbits)):
             plt.plot(range(len(self.exp_orbits[i])), self.exp_orbits[i], label=("choice " + str(i)))
         plt.ylabel('experience')
         plt.xlabel('time step')
 
-        plt.subplot(313)
-        # for i in range(len(self.orbits_utility)):
-        #     plt.plot(range(len(self.orbits_utility[i])), self.orbits_utility[i], label=("choice " + str(i)))
-        # plt.ylabel('utility')
-        # plt.xlabel('time step')
-        # plt.legend(bbox_to_anchor=(1.1,0.5))
+        plt.subplot(413)
+        for i in range(len(self.orbits_utility)):
+            plt.plot(range(len(self.orbits_utility[i])), self.orbits_utility[i], label=("choice " + str(i)))
+        plt.ylabel('utility gained')
+        plt.xlabel('time step')
 
+        plt.subplot(414)
         for i in range(len(self.aggregate_utility)):
             plt.plot(range(len(self.aggregate_utility[i])), self.aggregate_utility[i], label=("choice " + str(i)))
         plt.ylabel('utility')
         plt.xlabel('time step')
-        plt.legend(bbox_to_anchor=(1.1,0.5))
+        plt.legend()  #bbox_to_anchor=(1.1,0.5)
         plt.show()
 
     def run(self, steps, rotation_step, flag, noise_flag, plotting):
@@ -196,13 +195,15 @@ def main():
     steps = 1000
     rotation_step = 200
     flag = True
-    noise_flag = True
-    d = Agent_Based_Decision_Model(number_of_agents= 100, k = 1, alpha = 2,
+    noise_flag = False
+    d = Agent_Based_Decision_Model(number_of_agents= 100,
+                                   k = 1, alpha = 2,
                                    utility_of_choices= [0.25,0.50,0.75,1],
                                    initial_experiences=[1, 1, 1, 1],
-                                   discount_rate=1, noise_standard_deviation=10,
+                                   discount_rate=1,
+                                   noise_standard_deviation=0,
                                    use_fun_for_utilities=True,
-                                   frequencies=[50, 10, 30]
+                                   frequencies=[100, 10, 50]
                                    )
 
     d.run(steps,rotation_step, flag, noise_flag, plotting=True)

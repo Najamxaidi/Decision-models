@@ -164,6 +164,7 @@ class SystemDynamicsWithSdeint:
                                          np.sum(np.power((exp_1 + self.k), self.alpha))
 
         # Equation 3.1 ends
+        pi_flux_for_node_2 = options_probability_for_node_2 * pi_flux_for_node_1[0]
         pi_qi_flux_for_node_2 = options_probability_for_node_2 * self.utility_of_choices_for_node_two \
                                 * pi_flux_for_node_1[0]
 
@@ -177,6 +178,7 @@ class SystemDynamicsWithSdeint:
         # print(options_probability_for_node_2)
         # print(options_probability_for_node_3)
         # Equation 3.1 ends
+        pi_flux_for_node_3 = options_probability_for_node_3 * pi_flux_for_node_1[1]
         pi_qi_flux_for_node_3 = options_probability_for_node_3 * self.utility_of_choices_for_node_three \
                                 * pi_flux_for_node_1[1]
 
@@ -184,8 +186,8 @@ class SystemDynamicsWithSdeint:
 
         for i in range(self.options):
             self.propotion_of_agents_at_one[i].append(pi_flux_for_node_1[i])
-            self.propotion_of_agents_at_two[i].append(pi_qi_flux_for_node_2[i])
-            self.propotion_of_agents_at_three[i].append(pi_qi_flux_for_node_3[i])
+            self.propotion_of_agents_at_two[i].append(pi_flux_for_node_2[i])
+            self.propotion_of_agents_at_three[i].append(pi_flux_for_node_3[i])
 
             self.utility_gained_at_node_two[i].append(pi_qi_flux_for_node_2)
             self.utility_gained_at_node_three[i].append(pi_qi_flux_for_node_3)
@@ -307,13 +309,13 @@ def main():
                                     alpha=2,
                                     utility_of_choices=[0,0,0,0],
                                     initial_experiences=[1, 1, 1, 1],
-                                    discount_rate=[0.99,0.99,0.99],
-                                    noise_standard_deviation=[0,2,2],
+                                    discount_rate=[1,1,1],
+                                    noise_standard_deviation=[0,0,0],
                                     rotation_time=[0,0,0],
                                     rotation_flag=False,
                                     use_fun_for_utilities = True,
-                                    frequencies=[50,10,30],
-                                    phase=[45,0,0],
+                                    frequencies=[60,10,30],
+                                    phase=[15,85,125],
                                     utility_flag=False)
 
     sysd.solve(time_vector=np.linspace(0, 1000, 500))

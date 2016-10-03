@@ -368,10 +368,10 @@ def main():
 
     d = Hierarchy(number_of_agents= 100,
                   k = 1, alpha = 2,
-                  utility_of_choices= [1,2,3,4],
-                  initial_experiences=[3, 3, 3, 3],
+                  utility_of_choices= [0,0,0,0],
+                  initial_experiences=[1, 2, 3, 4],
                   discount_rate=[1,1,1],
-                  noise_standard_deviation=[0.01,0.01,0.01],
+                  noise_standard_deviation=[10,9,0.0001],
                   utility_flag = False, # if false than swap utilities in cluster otherwise shift utilities
                   use_fun_for_utilities = True, # utility flag should be false when using it
                   frequencies=[50,10,30],
