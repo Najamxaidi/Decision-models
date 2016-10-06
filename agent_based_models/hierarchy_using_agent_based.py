@@ -49,14 +49,14 @@ class Hierarchy:
                 self.utility_of_choices_for_node_two = np.array([utility_of_choices[0],utility_of_choices[1]])
                 self.utility_of_choices_for_node_three = np.array([utility_of_choices[2],utility_of_choices[3]])
         else:
-            a = sine_fun(frequency=frequencies[0], t=0, fs=8000, phase=phase[0])
-            b = 1 - a
+            a = sine_fun(frequency=self.frequencies[0], t=0, fs=8000, phase=self.phase[0])
+            b = sine_fun(frequency=self.frequencies[1], t=0, fs=8000, phase=self.phase[1])
 
-            a1 = sine_fun(frequency=frequencies[1], t=0, fs=8000, phase=phase[1])
-            a2 = 1 - a1
+            a1 = sine_fun(frequency=self.frequencies[2], t=0, fs=8000, phase=self.phase[2])
+            a2 = sine_fun(frequency=self.frequencies[3], t=0, fs=8000, phase=self.phase[3])
 
-            b1 = sine_fun(frequency=frequencies[2], t=0, fs=8000, phase=phase[2])
-            b2 = 1 - b1
+            b1 = sine_fun(frequency=self.frequencies[4], t=0, fs=8000, phase=self.phase[4])
+            b2 = sine_fun(frequency=self.frequencies[5], t=0, fs=8000, phase=self.phase[5])
 
             self.utility_of_choices_for_node_one = np.array([a,b])
             self.utility_of_choices_for_node_two = np.array([a*a1, a*a2])
@@ -75,9 +75,9 @@ class Hierarchy:
         self.previous_exp_for_node_three = np.array([initial_experiences[2], initial_experiences[3]])
         self.new_exp_for_node_three = np.array([initial_experiences[2], initial_experiences[3]])
 
-        self.discount_for_node_one = discount_rate[0]
-        self.discount_for_node_two = discount_rate[1]
-        self.discount_for_node_three = discount_rate[2]
+        self.discount_for_node_one = 1.0 - discount_rate[0]
+        self.discount_for_node_two = 1.0 - discount_rate[1]
+        self.discount_for_node_three = 1.0 - discount_rate[2]
 
         self.noise_standard_deviation_for_node_one = noise_standard_deviation[0]
         self.noise_standard_deviation_for_node_two = noise_standard_deviation[1]
@@ -162,8 +162,9 @@ class Hierarchy:
         else:
             temp_utility_for_node_two = count_of_choices_for_node_two * self.utility_of_choices_for_node_two
 
-        self.previous_exp_for_node_two *= self.discount_for_node_two
+        self.previous_exp_for_node_two = self.previous_exp_for_node_two * self.discount_for_node_two
         self.new_exp_for_node_two = temp_utility_for_node_two + self.previous_exp_for_node_two + noise_for_node_two
+        self.previous_exp_for_node_two = self.new_exp_for_node_two
 
         ####________________NODE-3________________####
 
@@ -187,22 +188,27 @@ class Hierarchy:
         else:
             temp_utility_for_node_three = count_of_choices_for_node_three * self.utility_of_choices_for_node_three
 
-        self.previous_exp_for_node_three *= self.discount_for_node_three
+        self.previous_exp_for_node_three = self.previous_exp_for_node_three * self.discount_for_node_three
         self.new_exp_for_node_three = temp_utility_for_node_three + self.previous_exp_for_node_three \
                                       + noise_for_node_three
-
+        self.previous_exp_for_node_three = self.new_exp_for_node_three
 
         ####________________UPDATE VALUES FOR NODE-1________________####
 
-        self.previous_exp_for_node_one *= self.discount_for_node_one
-        self.new_exp_for_node_one = [np.sum(self.new_exp_for_node_two),np.sum(self.new_exp_for_node_three)] \
-                                    + self.previous_exp_for_node_one + noise_for_node_one
+        temp_utility_for_node_one = [np.sum(temp_utility_for_node_two),np.sum(temp_utility_for_node_three)]
+        self.previous_exp_for_node_one = self.previous_exp_for_node_one * self.discount_for_node_one
+        self.new_exp_for_node_one = temp_utility_for_node_one + self.previous_exp_for_node_one + noise_for_node_one
+        self.previous_exp_for_node_one = self.new_exp_for_node_one
+
+        # self.new_exp_for_node_one = [np.sum(self.new_exp_for_node_two), np.sum(self.new_exp_for_node_three)] \
+        #                             + self.previous_exp_for_node_one + noise_for_node_one
 
 
         ####_______________PLOTTING-STUFF_______________####
 
         for i in range(self.options):
             self.number_of_agents_for_one[i].append(count_of_choices_for_node_one[i])
+            self.utility_for_node_one[i].append(temp_utility_for_node_one)
             if self.use_fun_for_utilities:
                 self.aggregated_utility_node1[i].append(self.utility_of_choices_for_node_one[i])
             if self.new_exp_for_node_one[i] < 0:
@@ -250,13 +256,13 @@ class Hierarchy:
             ##calculate new utility
             if self.use_fun_for_utilities:
                 a = sine_fun(frequency=self.frequencies[0], t=i, fs=8000, phase=self.phase[0])
-                b = 1 - a
+                b = sine_fun(frequency=self.frequencies[1], t=i, fs=8000, phase=self.phase[1])
 
-                a1 = sine_fun(frequency=self.frequencies[1], t=i, fs=8000, phase=self.phase[1])
-                a2 = 1 - a1
+                a1 = sine_fun(frequency=self.frequencies[2], t=i, fs=8000, phase=self.phase[2])
+                a2 = sine_fun(frequency=self.frequencies[3], t=i, fs=8000, phase=self.phase[3])
 
-                b1 = sine_fun(frequency=self.frequencies[2], t=i, fs=8000, phase=self.phase[2])
-                b2 = 1 - b1
+                b1 = sine_fun(frequency=self.frequencies[4], t=i, fs=8000, phase=self.phase[4])
+                b2 = sine_fun(frequency=self.frequencies[5], t=i, fs=8000, phase=self.phase[5])
 
                 self.utility_of_choices_for_node_one = np.array([a, b])
                 self.utility_of_choices_for_node_two = np.array([a * a1, a * a2])
@@ -347,6 +353,10 @@ class Hierarchy:
         plt.legend()
         plt.show()
 
+    def return_average_utility_for_node1(self, steps, rotation_step,rotation_flag):
+        self.run(steps, rotation_step, rotation_flag, True, plotting=False)
+        return np.average(np.average(self.utility_for_node_one, 0))
+
     def return_average_utility_for_node2(self, steps, rotation_step,rotation_flag):
         self.run(steps, rotation_step, rotation_flag, True, plotting=False)
         return np.average(np.average(self.utility_for_node_two, 0))
@@ -369,19 +379,15 @@ def main():
     d = Hierarchy(number_of_agents= 100,
                   k = 1, alpha = 2,
                   utility_of_choices= [0,0,0,0],
-                  initial_experiences=[1, 2, 3, 4],
+                  initial_experiences=[1, 1, 1, 1],
                   discount_rate=[1,1,1],
-                  noise_standard_deviation=[10,9,0.0001],
+                  noise_standard_deviation=[8,12,0.1],
                   utility_flag = False, # if false than swap utilities in cluster otherwise shift utilities
                   use_fun_for_utilities = True, # utility flag should be false when using it
-                  frequencies=[50,10,30],
-                  phase=[0, 0, 0])
+                  frequencies=[100,100,100,600,200,500],
+                  phase=[0,np.pi,np.pi/2,np.pi/3,np.pi/4,np.pi/5])
 
     d.run(steps,rotation_step, rotation_flag, noise_flag, plotting=True)
-
-
-    #print(d.return_average_utility_for_node2(steps,rotation_step,rotation_flag))
-    #print(d.return_average_utility_for_node3(steps, rotation_step,rotation_flag))
 
 if __name__ == "__main__":
     main()

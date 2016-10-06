@@ -14,7 +14,7 @@ class Agent_Based_Decision_Model:
 
     def __init__(self, number_of_agents, k, alpha, utility_of_choices,
                  initial_experiences, discount_rate, noise_standard_deviation, use_fun_for_utilities,
-                 frequencies):
+                 frequencies, phase):
 
         """
 
@@ -33,20 +33,18 @@ class Agent_Based_Decision_Model:
         self.alpha = alpha
         self.previous_exp = np.array(initial_experiences)  ##np.zeros((self.options,), dtype=np.float)
         self.new_exp = np.array(initial_experiences)
-        self.discount = discount_rate
+        self.discount = 1 - discount_rate
         self.noise_standard_deviation = noise_standard_deviation
         self.use_fun_for_utilities=use_fun_for_utilities
         self.frequencies=frequencies
+        self.phase = phase
 
         if use_fun_for_utilities:
-            a = sine_fun(frequency=frequencies[0], t=0, fs=8000)
-            b = 1 - a
+            a1 = sine_fun(frequency=self.frequencies[0], t=0, fs=8000, phase=self.phase[0])
+            a2 = sine_fun(frequency=self.frequencies[1], t=0, fs=8000, phase=self.phase[1])
 
-            a1 = sine_fun(frequency=frequencies[1], t=0, fs=8000)
-            a2 = 1 - a1
-
-            b1 = sine_fun(frequency=frequencies[2], t=0, fs=8000)
-            b2 = 1 - b1
+            b1 = sine_fun(frequency=self.frequencies[2], t=0, fs=8000, phase=self.phase[2])
+            b2 = sine_fun(frequency=self.frequencies[3], t=0, fs=8000, phase=self.phase[3])
 
             self.utility_of_choices = np.array([a1,a2,b1,b2])
 
@@ -106,8 +104,9 @@ class Agent_Based_Decision_Model:
         # previous experience is updated
         # check equation 3.2
 
-        self.previous_exp *= self.discount  # row * perv exp
+        self.previous_exp = self.previous_exp * self.discount  # row * perv exp
         self.new_exp = (temp_utility) + self.previous_exp + noise  ##-----
+        self.previous_exp = self.new_exp
 
         # for plotting
         for i in range(self.options):
@@ -166,14 +165,11 @@ class Agent_Based_Decision_Model:
                 j = 0
 
             if self.use_fun_for_utilities:
-                a = sine_fun(frequency=self.frequencies[0], t=i, fs=8000)
-                b = 1 - a
+                a1 = sine_fun(frequency=self.frequencies[0], t=i, fs=8000, phase=self.phase[0])
+                a2 = sine_fun(frequency=self.frequencies[1], t=i, fs=8000, phase=self.phase[1])
 
-                a1 = sine_fun(frequency=self.frequencies[1], t=i, fs=8000)
-                a2 = 1 - a1
-
-                b1 = sine_fun(frequency=self.frequencies[2], t=i, fs=8000)
-                b2 = 1 - b1
+                b1 = sine_fun(frequency=self.frequencies[2], t=i, fs=8000, phase=self.phase[2])
+                b2 = sine_fun(frequency=self.frequencies[3], t=i, fs=8000, phase=self.phase[3])
 
                 self.utility_of_choices = np.array([a1, a2, b1, b2])
 
@@ -187,23 +183,24 @@ class Agent_Based_Decision_Model:
         return np.average(np.average(self.orbits_utility,0))
 
 
-def sine_fun(frequency, t, fs):
-    y = (np.sin(2 * np.pi * frequency * t/ fs) + 1) / 2
+def sine_fun(frequency, t, fs, phase):
+    y = (np.sin(2 * np.pi * frequency * t/ fs + phase) + 1) / 2
     return y
 
 def main():
     steps = 1000
     rotation_step = 200
     flag = True
-    noise_flag = False
+    noise_flag = True
     d = Agent_Based_Decision_Model(number_of_agents= 100,
                                    k = 1, alpha = 2,
                                    utility_of_choices= [0.25,0.50,0.75,1],
                                    initial_experiences=[1, 1, 1, 1],
                                    discount_rate=1,
-                                   noise_standard_deviation=0,
+                                   noise_standard_deviation=10,
                                    use_fun_for_utilities=True,
-                                   frequencies=[100, 10, 50]
+                                   frequencies=[100,600,200,500],
+                                   phase = [np.pi/2,np.pi/3,np.pi/4,np.pi/5]
                                    )
 
     d.run(steps,rotation_step, flag, noise_flag, plotting=True)

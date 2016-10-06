@@ -177,7 +177,7 @@ def main():
                                     alpha=2,
                                     utility_of_choices=[0,0,0,0],
                                     initial_experiences=[1, 1, 1, 1],
-                                    discount_rate=0.99,
+                                    discount_rate=0,
                                     sd=0,
                                     rotation_time=200,
                                     rotation_flag=False,
