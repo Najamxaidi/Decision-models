@@ -53,10 +53,11 @@ class SystemDynamicsWithSdeint:
 
         #experience
         # experience of each choice at node-1 is the combined experience of the two choices
-        self.experiences_at_node_1 = np.array([initial_experiences[0] + initial_experiences[1],
-                                                 initial_experiences[2] + initial_experiences[3]])
+        self.experiences_at_node_1 = []
 
-        self.experiences_of_choices = np.array([initial_experiences[0], initial_experiences[1],
+        self.experiences_of_choices = np.array([initial_experiences[0] + initial_experiences[1],
+                                                initial_experiences[2] + initial_experiences[3],
+                                                initial_experiences[0], initial_experiences[1],
                                                 initial_experiences[2], initial_experiences[3]])
 
         self.experiences_at_node_2 = []
@@ -109,7 +110,6 @@ class SystemDynamicsWithSdeint:
         self.utility_of_choices_for_node_three = np.roll(self.utility_of_choices_for_node_three, 1)
 
     def rate_of_experience(self, experience, t):
-
         # keep track of rotation
         self.count_1 += 1
         self.count_2 += 1
@@ -124,23 +124,15 @@ class SystemDynamicsWithSdeint:
             self.rotation_of_utilitities_for_node_3()
             self.count_3 = 0
 
-        # calculate experience of agents at the first node
-        self.experiences_at_node_1[0] = experience[0] + experience[1]
-        self.experiences_at_node_1[1] = experience[2] + experience[3]
-
-        ####Plotting stuff
-        for i in range(self.options):
-            self.orbits_for_exp_at_node_1[i].append(self.experiences_at_node_1[i])
-
         # update utility accordingly
         if self.use_fun_for_utilities:
-            a = sine_fun(frequency=self.frequencies[0], t=self.value_for_sine, fs=8000, phase=self.phase[0])
+            a = sine_fun(frequency=self.frequencies[0], t=self.value_for_sine, fs=20000, phase=self.phase[0])
             b = 1 - a
 
-            a1 = sine_fun(frequency=self.frequencies[1], t=self.value_for_sine, fs=8000, phase=self.phase[1])
+            a1 = sine_fun(frequency=self.frequencies[1], t=self.value_for_sine, fs=20000, phase=self.phase[1])
             a2 = 1 - a1
 
-            b1 = sine_fun(frequency=self.frequencies[2], t=self.value_for_sine, fs=8000, phase=self.phase[2])
+            b1 = sine_fun(frequency=self.frequencies[2], t=self.value_for_sine, fs=20000, phase=self.phase[2])
             b2 = 1 - b1
 
             self.utility_of_choices_for_node_one = np.array([a, b])
@@ -151,14 +143,15 @@ class SystemDynamicsWithSdeint:
 
         ################################ NODE-1
         # calculate the probability based upon the initial experiences at node 1
-        options_probability_for_node_1 = (np.power((self.experiences_at_node_1 + self.k), self.alpha)) / \
-                              np.sum(np.power((self.experiences_at_node_1 + self.k), self.alpha))
+        exp_0 = np.array([experience[0], experience[1]])
+        options_probability_for_node_1 = (np.power((exp_0 + self.k), self.alpha)) / \
+                              np.sum(np.power((exp_0 + self.k), self.alpha))
 
         # Equation 3.1 ends
         pi_flux_for_node_1 = options_probability_for_node_1 * self.number_of_agents
 
         ################################ NODE-2
-        exp_1 = np.array([experience[0], experience[1]])
+        exp_1 = np.array([experience[2], experience[3]])
         # calculate the probability based upon the initial experiences at node 2
         options_probability_for_node_2 = (np.power((exp_1 + self.k), self.alpha)) / \
                                          np.sum(np.power((exp_1 + self.k), self.alpha))
@@ -169,18 +162,18 @@ class SystemDynamicsWithSdeint:
                                 * pi_flux_for_node_1[0]
 
         ################################ NODE-3
-        exp_2 = np.array([experience[2], experience[3]])
+        exp_2 = np.array([experience[4], experience[5]])
         # calculate the probability based upon the initial experiences at node 2
         options_probability_for_node_3 = (np.power((exp_2 + self.k), self.alpha)) / \
                                          np.sum(np.power((exp_2 + self.k), self.alpha))
 
-        # print(options_probability_for_node_1)
-        # print(options_probability_for_node_2)
-        # print(options_probability_for_node_3)
         # Equation 3.1 ends
         pi_flux_for_node_3 = options_probability_for_node_3 * pi_flux_for_node_1[1]
         pi_qi_flux_for_node_3 = options_probability_for_node_3 * self.utility_of_choices_for_node_three \
                                 * pi_flux_for_node_1[1]
+
+        ################################ NODE-1 revisited
+        pi_qi_flux_for_node_1 = np.array([np.sum(pi_qi_flux_for_node_2),np.sum(pi_qi_flux_for_node_3)])
 
         ################################ PLOTTING
 
@@ -189,8 +182,8 @@ class SystemDynamicsWithSdeint:
             self.propotion_of_agents_at_two[i].append(pi_flux_for_node_2[i])
             self.propotion_of_agents_at_three[i].append(pi_flux_for_node_3[i])
 
-            self.utility_gained_at_node_two[i].append(pi_qi_flux_for_node_2)
-            self.utility_gained_at_node_three[i].append(pi_qi_flux_for_node_3)
+            #self.utility_gained_at_node_two[i].append(pi_qi_flux_for_node_2)
+            #self.utility_gained_at_node_three[i].append(pi_qi_flux_for_node_3)
 
             if self.use_fun_for_utilities:
                 self.aggregated_utility_node1[i].append(self.utility_of_choices_for_node_one[i])
@@ -198,17 +191,26 @@ class SystemDynamicsWithSdeint:
             self.aggregated_utility_node3[i].append(self.utility_of_choices_for_node_three[i])
 
         ############################ UPDATE EXPERIENCES
-        row_ci_1 = self.discount_rate[0] * self.experiences_at_node_1
+        row_ci_1 = self.discount_rate[0] * exp_0
         row_ci_2 = self.discount_rate[1] * exp_1
         row_ci_3 = self.discount_rate[2] * exp_2
 
-        experience[0], experience[1] = pi_qi_flux_for_node_2 - row_ci_2
-        experience[2], experience[3] = pi_qi_flux_for_node_3 - row_ci_3
+        #experience[0], experience[1] = pi_qi_flux_for_node_1 - row_ci_1
+        # experience[2], experience[3] = pi_qi_flux_for_node_2 - row_ci_2
+        # experience[4], experience[5] = pi_qi_flux_for_node_3 - row_ci_3
+        a = pi_qi_flux_for_node_1 - row_ci_1
+        b = pi_qi_flux_for_node_2 - row_ci_2
+        c = pi_qi_flux_for_node_3 - row_ci_3
 
-        return experience
+        d = np.array([a[0],a[1],b[0],b[1],c[0],c[1]])
+
+        #return experience
+        return d
 
     def noise(self, W, t):
-        noise =  np.array([self.noise_standard_deviation_for_node_two,
+        noise =  np.array([self.noise_standard_deviation_for_node_one,
+                           self.noise_standard_deviation_for_node_one,
+                           self.noise_standard_deviation_for_node_two,
                     self.noise_standard_deviation_for_node_two,
                     self.noise_standard_deviation_for_node_three,
                     self.noise_standard_deviation_for_node_three])
@@ -221,12 +223,13 @@ class SystemDynamicsWithSdeint:
         soln = sdeint.itoint(self.rate_of_experience, self.noise, self.experiences_of_choices, time_vector)
         low_values_indices = soln < 0  # Where values are low
         soln[low_values_indices] = 0
+        #print(soln)
 
-        for i in range(len(self.orbits_for_exp_at_node_1[0])):
-            if self.orbits_for_exp_at_node_1[0][i] < 0:
-                self.orbits_for_exp_at_node_1[0][i] = 0
-            if self.orbits_for_exp_at_node_1[1][i] < 0:
-                self.orbits_for_exp_at_node_1[1][i] = 0
+        # for i in range(len(self.orbits_for_exp_at_node_1[0])):
+        #     if self.orbits_for_exp_at_node_1[0][i] < 0:
+        #         self.orbits_for_exp_at_node_1[0][i] = 0
+        #     if self.orbits_for_exp_at_node_1[1][i] < 0:
+        #         self.orbits_for_exp_at_node_1[1][i] = 0
 
         self.plot(soln,t)
 
@@ -239,8 +242,10 @@ class SystemDynamicsWithSdeint:
         plt.title('number/experience/utility vs time steps \n NODE_AB')
 
         plt.subplot(312)
-        for i in range(len(self.orbits_for_exp_at_node_1)):
-            plt.plot(range(len(self.orbits_for_exp_at_node_1[i])), self.orbits_for_exp_at_node_1[i], label=("Cluster " + str(i)))
+        for i in range(self.options):
+            plt.plot(t, soln[:, i], label=("choice " + str(i)))
+        # for i in range(len(self.orbits_for_exp_at_node_1)):
+        #     plt.plot(range(len(self.orbits_for_exp_at_node_1[i])), self.orbits_for_exp_at_node_1[i], label=("Cluster " + str(i)))
         plt.ylabel('experience of agents')
 
         plt.subplot(313)
@@ -261,7 +266,7 @@ class SystemDynamicsWithSdeint:
 
         plt.subplot(312)
         for i in range(self.options):
-            plt.plot(t, soln[:, i], label=("choice " + str(i)))
+            plt.plot(t, soln[:, i+2], label=("choice " + str(i)))
         plt.ylabel('experience of agents')
 
         plt.subplot(313)
@@ -275,13 +280,13 @@ class SystemDynamicsWithSdeint:
         plt.subplot(311)
         for i in range(len(self.propotion_of_agents_at_three)):
             plt.plot(range(len(self.propotion_of_agents_at_three[i])), self.propotion_of_agents_at_three[i],
-                     label=("choice " + str(i+2)))
+                     label=("choice " + str(i+4)))
         plt.ylabel('number of agents')
         plt.title('number/experience/utility vs time steps \n NODE_B')
 
         plt.subplot(312)
         for i in range(self.options):
-            plt.plot(t, soln[:, i+2], label=("choice " + str(i)))
+            plt.plot(t, soln[:, i+4], label=("choice " + str(i)))
         plt.ylabel('experience of agents')
 
         plt.subplot(313)
@@ -312,17 +317,17 @@ def sine_fun(frequency, t, fs, phase):
 
 def main():
     sysd = SystemDynamicsWithSdeint(number_of_agents=100,
-                                    k=10,
+                                    k=0.5,
                                     alpha=2,
                                     utility_of_choices=[0,0,0,0],
                                     initial_experiences=[1, 1, 1, 1],
-                                    discount_rate=[1,1,1],
-                                    noise_standard_deviation=[0,0,0],
+                                    discount_rate=[0.1,0.1,0.1],
+                                    noise_standard_deviation=[40,40,40],
                                     rotation_time=[0,0,0],
                                     rotation_flag=False,
                                     use_fun_for_utilities = True,
-                                    frequencies=[500,10,30],
-                                    phase=[0,0,0],
+                                    frequencies=[100,100,100],
+                                    phase=[0,np.pi/3,np.pi/4],
                                     utility_flag=False)
 
     sysd.solve(time_vector=np.linspace(0, 1000, 500))

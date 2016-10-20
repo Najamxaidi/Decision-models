@@ -50,6 +50,7 @@ class AgentBasedStatGenerator:
         utility_array_for_node_1 = []
         utility_array_for_node_2 = []
         utility_array_for_node_3 = []
+        utility_array = []
         standard_deviation = []
         ######### Generating statistics #############
         for i in self.frange(0.1, self.end_sd, self.step_for_sd):
@@ -67,12 +68,13 @@ class AgentBasedStatGenerator:
             utility_array_for_node_1.append(agb.return_average_utility_for_node1(steps, rotation_step, rotation_flag))
             utility_array_for_node_2.append(agb.return_average_utility_for_node2(steps, rotation_step,rotation_flag))
             utility_array_for_node_3.append(agb.return_average_utility_for_node3(steps, rotation_step,rotation_flag))
+            utility_array.append(agb.return_average_utility(steps, rotation_step, rotation_flag))
             standard_deviation.append(i)
 
-        total_utility_average_array = np.array(utility_array_for_node_1) + np.array(utility_array_for_node_2) \
-                                      + np.array(utility_array_for_node_3)
-
-        total_utility_average_array =  total_utility_average_array/3
+        # total_utility_average_array = np.array(utility_array_for_node_1) + np.array(utility_array_for_node_2) \
+        #                               + np.array(utility_array_for_node_3)
+        #
+        # total_utility_average_array =  total_utility_average_array/3
 
         plt.figure(1)
         plt.subplot(411)
@@ -91,7 +93,7 @@ class AgentBasedStatGenerator:
         plt.ylabel('average utility  \n at node B')
 
         plt.subplot(414)
-        plt.plot(standard_deviation, total_utility_average_array, label="test")
+        plt.plot(standard_deviation, utility_array, label="test")
         plt.xlabel('standard deviation')
         plt.ylabel('total average \n utility')
         plt.show()
@@ -203,36 +205,36 @@ class AgentBasedStatGenerator:
 def main():
 
     absg = AgentBasedStatGenerator( number_of_agents=100,
-                                    k=1,
+                                    k=0.5,
                                     alpha=2,
                                     utility_of_choices=[0,0,0,0],
                                     initial_experiences=[1, 1, 1, 1],
-                                    discount_rate= [1,1,1],
+                                    discount_rate= [0.1,0.1,0.1],
                                     step_for_sd=0.5,
-                                    end_sd=30,
+                                    end_sd=100,
                                     utility_flag=False,
                                     use_fun_for_utilities=True)
 
     # absg.generate_utility_sweep_using_flat_model(steps=1000,
     #                                              rotation_step=[0,0,0,0],
-    #                                              feq=[100,600,200,500],
-    #                                              phase=[np.pi/2,np.pi/3,np.pi/4,np.pi/5])
+    #                                              feq=[200,1000,1000],
+    #                                              phase=[0,0,0])
 
     absg.generate_utility_sweep_using_hierarchy(steps = 1000,
                                                 rotation_step = [0,0,0],
                                                 rotation_flag=False,
-                                                frequencies=[100,100,100,600,200,500],
-                                                phase=[0,np.pi,np.pi/2,np.pi/3,np.pi/4,np.pi/5]
+                                                frequencies=[200,1000,1000],
+                                                phase=[0,0,0]
                                                 )
 
-    # absg.average_run_using_hierarchy(number_of_runs=50,
-    #                                  steps=1000,
+    # absg.average_run_using_hierarchy(number_of_runs=100,
+    #                                  steps=5000,
     #                                  rotation_step=[100,200,300],
     #                                  rotation_flag=False,
-    #                                  noise_flag=True,
-    #                                  sd=[10,10,10],
-    #                                  frequencies=[50,100,10,30,80,20],
-    #                                  phase=[0,np.pi/2,0,np.pi/3,0,np.pi/4])
+    #                                  noise_flag=False,
+    #                                  sd=[0,0,0],
+    #                                  frequencies=[200,400,400],
+    #                                  phase=[0,0,0])
 
 if __name__ == "__main__":
     main()

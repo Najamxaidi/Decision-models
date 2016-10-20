@@ -43,16 +43,16 @@ class SystemDynamicsWithSdeint:
         self.phase = phase
 
         if use_fun_for_utilities:
-            a = sine_fun(frequency=frequencies[0], t=0, fs=8000, phase=self.phase[0])
+            a = sine_fun(frequency=frequencies[0], t=0, fs=20000, phase=self.phase[0])
             b = 1 - a
 
-            a1 = sine_fun(frequency=frequencies[1], t=0, fs=8000, phase=self.phase[1])
+            a1 = sine_fun(frequency=frequencies[1], t=0, fs=20000, phase=self.phase[1])
             a2 = 1 - a1
 
-            b1 = sine_fun(frequency=frequencies[2], t=0, fs=8000, phase=self.phase[2])
+            b1 = sine_fun(frequency=frequencies[2], t=0, fs=20000, phase=self.phase[2])
             b2 = 1 - b1
 
-            self.utility_of_choices = np.array([a1,a2,b1,b2])
+            self.utility_of_choices = np.array([a * a1,a * a2,b * b1, b * b2])
         else:
             self.utility_of_choices = np.array(utility_of_choices)
 
@@ -77,16 +77,16 @@ class SystemDynamicsWithSdeint:
             self.count = 0
 
         if self.use_fun_for_utilities:
-            a = sine_fun(frequency=self.frequencies[0], t=self.count, fs=8000, phase=self.phase[0])
+            a = sine_fun(frequency=self.frequencies[0], t=self.count, fs=20000, phase=self.phase[0])
             b = 1 - a
 
-            a1 = sine_fun(frequency=self.frequencies[1], t=self.count, fs=8000, phase=self.phase[1])
+            a1 = sine_fun(frequency=self.frequencies[1], t=self.count, fs=20000, phase=self.phase[1])
             a2 = 1 - a1
 
-            b1 = sine_fun(frequency=self.frequencies[2], t=self.count, fs=8000, phase=self.phase[2])
+            b1 = sine_fun(frequency=self.frequencies[2], t=self.count, fs=20000, phase=self.phase[2])
             b2 = 1 - b1
 
-            self.utility_of_choices = np.array([a1, a2, b1, b2])
+            self.utility_of_choices = np.array([a * a1, a * a2, b * b1, b * b2])
 
         # Equation 3.1 starts (this is pi)
         # calculate the probability based upon the initial experiences
@@ -130,26 +130,26 @@ class SystemDynamicsWithSdeint:
 
     def plot(self, soln, time_vector):
         plt.figure(1)
-        plt.subplot(411)
+        plt.subplot(311)
         for i in range(len(self.orbits)):
             plt.plot(range(len(self.orbits[i])), self.orbits[i], label=("choice " + str(i)))
         # plt.ylim(-1, 1)
         plt.ylabel('proportion')
         plt.title('1st: proportion of agents vs time steps -- 2nd: experience of agents vs time steps')
 
-        plt.subplot(412)
+        plt.subplot(312)
         for i in range(self.options):
             plt.plot(time_vector, soln[:, i], label=("choice " + str(i)))
         plt.xlabel('time')
         plt.ylabel('experience')
 
-        plt.subplot(413)
-        for i in range(self.options):
-            plt.plot(range(len(self.orbits_utility[i])), self.orbits_utility[i], label=("choice " + str(i)))
-        plt.xlabel('time')
-        plt.ylabel('utility gained')
+        # plt.subplot(413)
+        # for i in range(self.options):
+        #     plt.plot(range(len(self.orbits_utility[i])), self.orbits_utility[i], label=("choice " + str(i)))
+        # plt.xlabel('time')
+        # plt.ylabel('utility gained')
 
-        plt.subplot(414)
+        plt.subplot(313)
         for i in range(self.options):
             plt.plot(range(len(self.aggregate_utility[i])), self.aggregate_utility[i], label=("choice " + str(i)))
         plt.xlabel('time')
@@ -173,17 +173,17 @@ def sine_fun(frequency, t, fs, phase):
 
 def main():
     sysd = SystemDynamicsWithSdeint(number_of_agents=100,
-                                    k=1,
+                                    k=0.5,
                                     alpha=2,
                                     utility_of_choices=[0,0,0,0],
                                     initial_experiences=[1, 1, 1, 1],
-                                    discount_rate=0,
-                                    sd=0,
+                                    discount_rate=0.1,
+                                    sd=35,
                                     rotation_time=200,
                                     rotation_flag=False,
                                     use_fun_for_utilities = True,
-                                    frequencies = [50, 10, 30],
-                                    phase = [0, 0, 0]
+                                    frequencies = [100, 100, 100],
+                                    phase = [0,np.pi/3,np.pi/4]
                                     )
 
     sysd.solve(time_vector=np.linspace(0, 1000, 500))

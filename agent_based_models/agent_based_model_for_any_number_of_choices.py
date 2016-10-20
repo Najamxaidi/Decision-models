@@ -39,16 +39,6 @@ class Agent_Based_Decision_Model:
         self.frequencies=frequencies
         self.phase = phase
 
-        if use_fun_for_utilities:
-            a1 = sine_fun(frequency=self.frequencies[0], t=0, fs=8000, phase=self.phase[0])
-            a2 = sine_fun(frequency=self.frequencies[1], t=0, fs=8000, phase=self.phase[1])
-
-            b1 = sine_fun(frequency=self.frequencies[2], t=0, fs=8000, phase=self.phase[2])
-            b2 = sine_fun(frequency=self.frequencies[3], t=0, fs=8000, phase=self.phase[3])
-
-            self.utility_of_choices = np.array([a1,a2,b1,b2])
-
-
         # initially the probablity has been set to zero
         # it will be calculated later based upon the initial experience
         self.options_Probability = np.zeros((self.options,), dtype=np.float)
@@ -111,6 +101,8 @@ class Agent_Based_Decision_Model:
         # for plotting
         for i in range(self.options):
             self.orbits[i].append(count_of_choices[i])
+            if self.new_exp[i] < 0:
+                self.new_exp[i] = 0
             self.exp_orbits[i].append(self.new_exp[i])
             self.orbits_utility[i].append(temp_utility[i])
             self.aggregate_utility[i].append(self.utility_of_choices[i])
@@ -128,7 +120,7 @@ class Agent_Based_Decision_Model:
         # plot the graphs
 
         plt.figure(1)
-        plt.subplot(411)
+        plt.subplot(311)
         for i in range(len(self.orbits)):
             plt.plot(range(len(self.orbits[i])), self.orbits[i], label=("choice " + str(i)))
         plt.ylim(-10, self.numberOfAgents+10)
@@ -136,21 +128,29 @@ class Agent_Based_Decision_Model:
         plt.title('1st: number of agents vs time steps -- 2nd: experience of agents vs time steps \n'
                   '3rd: utility of agents vs time steps')
 
-        plt.subplot(412)
+        plt.subplot(312)
         for i in range(len(self.exp_orbits)):
             plt.plot(range(len(self.exp_orbits[i])), self.exp_orbits[i], label=("choice " + str(i)))
         plt.ylabel('experience')
         plt.xlabel('time step')
 
-        plt.subplot(413)
-        for i in range(len(self.orbits_utility)):
-            plt.plot(range(len(self.orbits_utility[i])), self.orbits_utility[i], label=("choice " + str(i)))
-        plt.ylabel('utility gained')
-        plt.xlabel('time step')
+        # plt.subplot(413)
+        # for i in range(len(self.orbits_utility)):
+        #     plt.plot(range(len(self.orbits_utility[i])), self.orbits_utility[i], label=("choice " + str(i)))
+        # plt.ylabel('utility gained')
+        # plt.xlabel('time step')
 
-        plt.subplot(414)
+        t = 0
+        q = 0
+        plt.subplot(313)
         for i in range(len(self.aggregate_utility)):
-            plt.plot(range(len(self.aggregate_utility[i])), self.aggregate_utility[i], label=("choice " + str(i)))
+            if t < 2:
+                plt.plot(range(len(self.aggregate_utility[i])), self.aggregate_utility[i], label=("A" + str(t+1)))
+                t +=1
+            else:
+                plt.plot(range(len(self.aggregate_utility[i])), self.aggregate_utility[i], label=("B" + str(q+1)))
+                q += 1
+
         plt.ylabel('utility')
         plt.xlabel('time step')
         plt.legend()  #bbox_to_anchor=(1.1,0.5)
@@ -165,13 +165,16 @@ class Agent_Based_Decision_Model:
                 j = 0
 
             if self.use_fun_for_utilities:
-                a1 = sine_fun(frequency=self.frequencies[0], t=i, fs=8000, phase=self.phase[0])
-                a2 = sine_fun(frequency=self.frequencies[1], t=i, fs=8000, phase=self.phase[1])
+                a = sine_fun(frequency=self.frequencies[0], t=i, fs=20000, phase=self.phase[0])
+                b = 1 - a
 
-                b1 = sine_fun(frequency=self.frequencies[2], t=i, fs=8000, phase=self.phase[2])
-                b2 = sine_fun(frequency=self.frequencies[3], t=i, fs=8000, phase=self.phase[3])
+                a1 = sine_fun(frequency=self.frequencies[1], t=i, fs=20000, phase=self.phase[1])
+                a2 = 1 - a1
 
-                self.utility_of_choices = np.array([a1, a2, b1, b2])
+                b1 = sine_fun(frequency=self.frequencies[2], t=i, fs=20000, phase=self.phase[2])
+                b2 = 1 - b1
+
+                self.utility_of_choices = np.array([a * a1, a * a2, b * b1, b * b2])
 
             self.step(noise_flag)
 
@@ -179,7 +182,8 @@ class Agent_Based_Decision_Model:
             self.plot()
 
     def return_average_utility(self,steps,rotation_step):
-        self.run(steps,rotation_step, True, True, plotting=False)
+        self.run(steps,rotation_step, False, True, plotting=False)
+        #print(self.orbits_utility)
         return np.average(np.average(self.orbits_utility,0))
 
 
@@ -190,20 +194,25 @@ def sine_fun(frequency, t, fs, phase):
 def main():
     steps = 1000
     rotation_step = 200
-    flag = True
-    noise_flag = True
+    flag = False
+    noise_flag = False
     d = Agent_Based_Decision_Model(number_of_agents= 100,
-                                   k = 1, alpha = 2,
-                                   utility_of_choices= [0.25,0.50,0.75,1],
+                                   k = 0.5, alpha = 2,
+                                   utility_of_choices= [0,0,0,0],
                                    initial_experiences=[1, 1, 1, 1],
-                                   discount_rate=1,
+                                   discount_rate=0.1,
                                    noise_standard_deviation=10,
                                    use_fun_for_utilities=True,
-                                   frequencies=[100,600,200,500],
-                                   phase = [np.pi/2,np.pi/3,np.pi/4,np.pi/5]
+                                   frequencies=[100,500,100],
+                                   phase=[0,np.pi/3,np.pi/4]
                                    )
 
     d.run(steps,rotation_step, flag, noise_flag, plotting=True)
+    # sum = 0
+    # for i in range(100):
+    #     sum += d.return_average_utility(steps,rotation_step)
+    # print(sum / 100)
+
 
 
 if __name__ == "__main__":

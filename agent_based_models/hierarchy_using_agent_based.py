@@ -50,13 +50,13 @@ class Hierarchy:
                 self.utility_of_choices_for_node_three = np.array([utility_of_choices[2],utility_of_choices[3]])
         else:
             a = sine_fun(frequency=self.frequencies[0], t=0, fs=8000, phase=self.phase[0])
-            b = sine_fun(frequency=self.frequencies[1], t=0, fs=8000, phase=self.phase[1])
+            b = 1 - a
 
-            a1 = sine_fun(frequency=self.frequencies[2], t=0, fs=8000, phase=self.phase[2])
-            a2 = sine_fun(frequency=self.frequencies[3], t=0, fs=8000, phase=self.phase[3])
+            a1 = sine_fun(frequency=self.frequencies[1], t=0, fs=8000, phase=self.phase[1])
+            a2 = 1 - a1
 
-            b1 = sine_fun(frequency=self.frequencies[4], t=0, fs=8000, phase=self.phase[4])
-            b2 = sine_fun(frequency=self.frequencies[5], t=0, fs=8000, phase=self.phase[5])
+            b1 = sine_fun(frequency=self.frequencies[2], t=0, fs=8000, phase=self.phase[2])
+            b2 = 1 - b1
 
             self.utility_of_choices_for_node_one = np.array([a,b])
             self.utility_of_choices_for_node_two = np.array([a*a1, a*a2])
@@ -208,7 +208,7 @@ class Hierarchy:
 
         for i in range(self.options):
             self.number_of_agents_for_one[i].append(count_of_choices_for_node_one[i])
-            self.utility_for_node_one[i].append(temp_utility_for_node_one)
+            self.utility_for_node_one[i].append(temp_utility_for_node_one[i])
             if self.use_fun_for_utilities:
                 self.aggregated_utility_node1[i].append(self.utility_of_choices_for_node_one[i])
             if self.new_exp_for_node_one[i] < 0:
@@ -218,7 +218,7 @@ class Hierarchy:
 
             self.number_of_agents_for_two[i].append(count_of_choices_for_node_two[i])
             self.aggregated_utility_node2[i].append(self.utility_of_choices_for_node_two[i])
-            self.utility_for_node_two[i].append(temp_utility_for_node_two)
+            self.utility_for_node_two[i].append(temp_utility_for_node_two[i])
             if self.new_exp_for_node_two[i] < 0:
                 self.exp_for_two[i].append(0)
             else:
@@ -226,7 +226,7 @@ class Hierarchy:
 
             self.number_of_agents_for_three[i].append(count_of_choices_for_node_three[i])
             self.aggregated_utility_node3[i].append(self.utility_of_choices_for_node_three[i])
-            self.utility_for_node_three[i].append(temp_utility_for_node_three)
+            self.utility_for_node_three[i].append(temp_utility_for_node_three[i])
             if self.new_exp_for_node_three[i] < 0:
                 self.exp_for_three[i].append(0)
             else:
@@ -255,14 +255,14 @@ class Hierarchy:
 
             ##calculate new utility
             if self.use_fun_for_utilities:
-                a = sine_fun(frequency=self.frequencies[0], t=i, fs=8000, phase=self.phase[0])
-                b = sine_fun(frequency=self.frequencies[1], t=i, fs=8000, phase=self.phase[1])
+                a = sine_fun(frequency=self.frequencies[0], t=i, fs=20000, phase=self.phase[0])
+                b = 1 - a
 
-                a1 = sine_fun(frequency=self.frequencies[2], t=i, fs=8000, phase=self.phase[2])
-                a2 = sine_fun(frequency=self.frequencies[3], t=i, fs=8000, phase=self.phase[3])
+                a1 = sine_fun(frequency=self.frequencies[1], t=i, fs=20000, phase=self.phase[1])
+                a2 = 1 - a1
 
-                b1 = sine_fun(frequency=self.frequencies[4], t=i, fs=8000, phase=self.phase[4])
-                b2 = sine_fun(frequency=self.frequencies[5], t=i, fs=8000, phase=self.phase[5])
+                b1 = sine_fun(frequency=self.frequencies[2], t=i, fs=20000, phase=self.phase[2])
+                b2 = 1 - b1
 
                 self.utility_of_choices_for_node_one = np.array([a, b])
                 self.utility_of_choices_for_node_two = np.array([a * a1, a * a2])
@@ -351,6 +351,40 @@ class Hierarchy:
         plt.ylabel('utility of choices')
         plt.xlabel('time step')
         plt.legend()
+
+        plt.figure(4)
+        plt.subplot(311)
+        for i in range(len(self.number_of_agents_for_three)):
+            plt.plot(range(len(self.number_of_agents_for_two[i])), self.number_of_agents_for_two[i],
+                     label=("choice " + str(i)))
+        for i in range(len(self.number_of_agents_for_three)):
+            plt.plot(range(len(self.number_of_agents_for_three[i])), self.number_of_agents_for_three[i],
+                     label=("choice " + str(i + 2)))
+        plt.ylim(-10, self.numberOfAgents + 10)
+        plt.ylabel('number of agents')
+        plt.title('number of agents/experience/utility of choices vs time steps')
+
+        plt.subplot(312)
+        for i in range(len(self.exp_for_three)):
+            plt.plot(range(len(self.exp_for_two[i])), self.exp_for_two[i], label=("choice " + str(i)))
+
+        for i in range(len(self.number_of_agents_for_three)):
+            plt.plot(range(len(self.exp_for_three[i])), self.exp_for_three[i], label=("choice " + str(i + 2)))
+        plt.ylabel('experience of agents')
+        # plt.xlabel('time step')
+
+        plt.subplot(313)
+        for i in range(len(self.aggregated_utility_node3)):
+            plt.plot(range(len(self.aggregated_utility_node2[i])), self.aggregated_utility_node2[i],
+                     label=("A" + str(i + 1)))
+
+        for i in range(len(self.number_of_agents_for_three)):
+            plt.plot(range(len(self.aggregated_utility_node3[i])), self.aggregated_utility_node3[i],
+                     label=("B" + str(i + 1)))
+        plt.ylabel('utility of choices')
+        plt.xlabel('time step')
+        plt.legend()
+
         plt.show()
 
     def return_average_utility_for_node1(self, steps, rotation_step,rotation_flag):
@@ -359,11 +393,18 @@ class Hierarchy:
 
     def return_average_utility_for_node2(self, steps, rotation_step,rotation_flag):
         self.run(steps, rotation_step, rotation_flag, True, plotting=False)
+        #print(self.utility_for_node_two)
         return np.average(np.average(self.utility_for_node_two, 0))
 
     def return_average_utility_for_node3(self, steps, rotation_step,rotation_flag):
         self.run(steps, rotation_step, rotation_flag, True, plotting=False)
         return np.average(np.average(self.utility_for_node_three, 0))
+
+    def return_average_utility(self, steps, rotation_step,rotation_flag):
+        self.run(steps, rotation_step, rotation_flag, True, plotting=False)
+        temp = np.concatenate((self.utility_for_node_two, self.utility_for_node_three), axis = 0)
+        #print(temp)
+        return np.average(np.average(temp, 0))
 
 
 def sine_fun(frequency, t, fs, phase):
@@ -372,22 +413,30 @@ def sine_fun(frequency, t, fs, phase):
 
 def main():
     steps = 1000
-    rotation_step = [400, 200, 200]
+    rotation_step = [0, 0, 0]
     rotation_flag = False
-    noise_flag = True
+    noise_flag = False
 
     d = Hierarchy(number_of_agents= 100,
                   k = 1, alpha = 2,
                   utility_of_choices= [0,0,0,0],
                   initial_experiences=[1, 1, 1, 1],
                   discount_rate=[1,1,1],
-                  noise_standard_deviation=[8,12,0.1],
+                  noise_standard_deviation=[1,10,1],
                   utility_flag = False, # if false than swap utilities in cluster otherwise shift utilities
                   use_fun_for_utilities = True, # utility flag should be false when using it
-                  frequencies=[100,100,100,600,200,500],
-                  phase=[0,np.pi,np.pi/2,np.pi/3,np.pi/4,np.pi/5])
+                  frequencies=[100,500,100],
+                  phase=[0,np.pi/3,np.pi/4])
 
     d.run(steps,rotation_step, rotation_flag, noise_flag, plotting=True)
+    # sum = 0
+    # for i in range(100):
+    #     sum += d.return_average_utility(steps,rotation_step, rotation_flag)
+    # print(sum/100)
+    # d.return_average_utility_for_node2(steps, rotation_step, rotation_flag)
 
 if __name__ == "__main__":
     main()
+
+#frequencies=[10,50,50],
+#phase=[0,np.pi/5,np.pi/9]

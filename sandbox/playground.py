@@ -81,5 +81,13 @@ import matplotlib.pyplot as plt
 #
 # print(temp[:, 0])
 
-if [1,1] == [1,1]:
-    print("h")
+# if [1,1] == [1,1]:
+#     print("h")
+
+# a = np.array([[1,2],[3,4]])
+# b = np.array([[5,6],[7,8]])
+# c = np.concatenate((a,b), axis = 0)
+# print(c)
+
+a,b = [1,2] + [3,4]
+print(a)
